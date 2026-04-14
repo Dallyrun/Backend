@@ -12,10 +12,15 @@ spring:
     hibernate:
       ddl-auto: update
     open-in-view: false
+    defer-datasource-initialization: true
     properties:
       hibernate:
         format_sql: true
         default_batch_fetch_size: 100
+
+  sql:
+    init:
+      mode: always
 
   data:
     redis:
@@ -24,3 +29,26 @@ spring:
 
 server:
   port: 8080
+
+jwt:
+  secret: ${JWT_SECRET:dev-secret-key-min-256-bits-long-for-hmac-sha}
+  access-token-expiry: 1800000
+  refresh-token-expiry: 1209600000
+
+oauth:
+  kakao:
+    client-id: ${KAKAO_CLIENT_ID:}
+    client-secret: ${KAKAO_CLIENT_SECRET:}
+    redirect-uri: ${KAKAO_REDIRECT_URI:}
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:}
+    client-secret: ${GOOGLE_CLIENT_SECRET:}
+    redirect-uri: ${GOOGLE_REDIRECT_URI:}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs

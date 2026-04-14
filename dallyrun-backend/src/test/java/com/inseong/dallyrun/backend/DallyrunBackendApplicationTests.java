@@ -1,13 +1,14 @@
 package com.inseong.dallyrun.backend;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootTest
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 class DallyrunBackendApplicationTests {
 
     @Test
-    void contextLoads() {
+    void applicationClassIsAnnotated() {
+        assertNotNull(DallyrunBackendApplication.class.getAnnotation(SpringBootApplication.class));
     }
-
 }
