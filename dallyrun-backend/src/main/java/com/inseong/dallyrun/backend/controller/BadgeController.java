@@ -34,7 +34,7 @@ public class BadgeController {
     @GetMapping("/api/badges")
     public ResponseEntity<ApiResponse<List<BadgeResponse>>> getAllBadges() {
         List<BadgeResponse> response = badgeService.getAllBadges();
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.of(response));
     }
 
     @Operation(
@@ -47,6 +47,6 @@ public class BadgeController {
     public ResponseEntity<ApiResponse<List<MemberBadgeResponse>>> getMyBadges(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         List<MemberBadgeResponse> response = badgeService.getMemberBadges(userDetails.getMemberId());
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.of(response));
     }
 }

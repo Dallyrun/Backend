@@ -42,7 +42,7 @@ public class GoalController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody GoalCreateRequest request) {
         GoalResponse response = goalService.createGoal(userDetails.getMemberId(), request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(response));
     }
 
     @Operation(
@@ -53,7 +53,7 @@ public class GoalController {
     public ResponseEntity<ApiResponse<List<GoalResponse>>> getActiveGoals(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         List<GoalResponse> response = goalService.getActiveGoals(userDetails.getMemberId());
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.of(response));
     }
 
     @Operation(
@@ -67,7 +67,7 @@ public class GoalController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long id) {
         GoalProgressResponse response = goalService.getGoalProgress(userDetails.getMemberId(), id);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.of(response));
     }
 
     @Operation(
@@ -80,7 +80,7 @@ public class GoalController {
             @PathVariable Long id,
             @RequestBody GoalUpdateRequest request) {
         GoalResponse response = goalService.updateGoal(userDetails.getMemberId(), id, request);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.of(response));
     }
 
     @Operation(
@@ -88,10 +88,10 @@ public class GoalController {
             description = "목표를 비활성 처리합니다 (소프트 삭제). 이후 활성 목표 목록에서 제외됩니다."
     )
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteGoal(
+    public ResponseEntity<Void> deleteGoal(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long id) {
         goalService.deleteGoal(userDetails.getMemberId(), id);
-        return ResponseEntity.ok(ApiResponse.success());
+        return ResponseEntity.ok().build();
     }
 }

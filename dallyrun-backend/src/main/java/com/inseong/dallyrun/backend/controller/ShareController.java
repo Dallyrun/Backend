@@ -34,7 +34,7 @@ public class ShareController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long id) {
         ShareDataResponse response = shareService.getShareData(userDetails.getMemberId(), id);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.of(response));
     }
 
     @Operation(
@@ -48,7 +48,7 @@ public class ShareController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long id) {
         ShareLinkResponse response = shareService.createShareLink(userDetails.getMemberId(), id);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(response));
     }
 
     @Operation(
@@ -60,6 +60,6 @@ public class ShareController {
     public ResponseEntity<ApiResponse<ShareDataResponse>> getSharedData(
             @PathVariable String shareCode) {
         ShareDataResponse response = shareService.getSharedData(shareCode);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.of(response));
     }
 }

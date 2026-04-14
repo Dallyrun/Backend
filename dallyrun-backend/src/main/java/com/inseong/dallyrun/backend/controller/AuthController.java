@@ -40,7 +40,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<TokenResponse>> kakaoLogin(
             @Valid @RequestBody OAuthLoginRequest request) {
         TokenResponse response = authService.oauthLogin(OAuthProvider.KAKAO, request.authCode());
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.of(response));
     }
 
     @Operation(
@@ -56,7 +56,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<TokenResponse>> googleLogin(
             @Valid @RequestBody OAuthLoginRequest request) {
         TokenResponse response = authService.oauthLogin(OAuthProvider.GOOGLE, request.authCode());
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.of(response));
     }
 
     @Operation(
@@ -73,7 +73,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<TokenResponse>> refreshToken(
             @Valid @RequestBody RefreshTokenRequest request) {
         TokenResponse response = authService.refreshToken(request.refreshToken());
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.of(response));
     }
 
     @Operation(
@@ -82,9 +82,9 @@ public class AuthController {
                     + "앱에서도 로컬에 저장된 Access Token과 Refresh Token을 함께 삭제해야 합니다."
     )
     @DeleteMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(
+    public ResponseEntity<Void> logout(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         authService.logout(userDetails.getMemberId());
-        return ResponseEntity.ok(ApiResponse.success());
+        return ResponseEntity.ok().build();
     }
 }

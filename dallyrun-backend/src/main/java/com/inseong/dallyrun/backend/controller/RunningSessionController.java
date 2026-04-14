@@ -43,7 +43,7 @@ public class RunningSessionController {
     public ResponseEntity<ApiResponse<RunningSessionStartResponse>> startSession(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         RunningSessionStartResponse response = runningSessionService.startSession(userDetails.getMemberId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(response));
     }
 
     @Operation(
@@ -64,7 +64,7 @@ public class RunningSessionController {
             @Valid @RequestBody RunningSessionEndRequest request) {
         RunningSessionResponse response = runningSessionService.endSession(
                 userDetails.getMemberId(), id, request);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.of(response));
     }
 
     @Operation(
@@ -79,7 +79,7 @@ public class RunningSessionController {
             @PageableDefault(size = 20) Pageable pageable) {
         Page<RunningSessionResponse> response = runningSessionService.getHistory(
                 userDetails.getMemberId(), pageable);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.of(response));
     }
 
     @Operation(
@@ -93,7 +93,7 @@ public class RunningSessionController {
             @PathVariable Long id) {
         RunningSessionDetailResponse response = runningSessionService.getDetail(
                 userDetails.getMemberId(), id);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.of(response));
     }
 
     @Operation(
@@ -107,7 +107,7 @@ public class RunningSessionController {
             @RequestBody MemoUpdateRequest request) {
         RunningSessionResponse response = runningSessionService.updateMemo(
                 userDetails.getMemberId(), id, request);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.of(response));
     }
 
     @Operation(
@@ -115,10 +115,10 @@ public class RunningSessionController {
             description = "러닝 기록과 관련 GPS 데이터를 모두 삭제합니다."
     )
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteSession(
+    public ResponseEntity<Void> deleteSession(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long id) {
         runningSessionService.deleteSession(userDetails.getMemberId(), id);
-        return ResponseEntity.ok(ApiResponse.success());
+        return ResponseEntity.ok().build();
     }
 }

@@ -31,7 +31,7 @@ public class MemberController {
     public ResponseEntity<ApiResponse<MemberResponse>> getProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         MemberResponse response = memberService.getProfile(userDetails.getMemberId());
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.of(response));
     }
 
     @Operation(
@@ -44,7 +44,7 @@ public class MemberController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody MemberUpdateRequest request) {
         MemberResponse response = memberService.updateProfile(userDetails.getMemberId(), request);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.of(response));
     }
 
     @Operation(
@@ -53,9 +53,9 @@ public class MemberController {
                     + "이 작업은 되돌릴 수 없습니다."
     )
     @DeleteMapping("/me")
-    public ResponseEntity<ApiResponse<Void>> deleteMember(
+    public ResponseEntity<Void> deleteMember(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         memberService.deleteMember(userDetails.getMemberId());
-        return ResponseEntity.ok(ApiResponse.success());
+        return ResponseEntity.ok().build();
     }
 }

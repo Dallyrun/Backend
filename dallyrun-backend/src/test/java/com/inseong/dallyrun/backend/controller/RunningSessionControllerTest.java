@@ -54,7 +54,6 @@ class RunningSessionControllerTest {
         mockMvc.perform(post("/api/running-sessions")
                         .with(user(testUser)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.id").value(1));
     }
 
@@ -70,7 +69,6 @@ class RunningSessionControllerTest {
         mockMvc.perform(get("/api/running-sessions")
                         .with(user(testUser)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.content[0].id").value(1));
     }
 

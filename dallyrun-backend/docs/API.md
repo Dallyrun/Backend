@@ -4,19 +4,16 @@
 
 Dallyrun 백엔드는 REST API 기반으로, 모든 응답은 아래 공통 포맷을 따릅니다.
 
+성공 시:
 ```json
 {
-  "success": true,
-  "data": { ... },
-  "message": null
+  "data": { ... }
 }
 ```
 
 에러 시:
 ```json
 {
-  "success": false,
-  "data": null,
   "message": "에러 메시지"
 }
 ```
@@ -103,7 +100,6 @@ Authorization: Bearer {accessToken}
 **Response**
 ```json
 {
-  "success": true,
   "data": {
     "accessToken": "eyJhbGciOi...",
     "refreshToken": "eyJhbGciOi..."
@@ -134,12 +130,7 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 
 로그아웃. 서버의 Refresh Token을 삭제합니다.
 
-**Response**
-```json
-{
-  "success": true
-}
-```
+**Response** `200 OK` (본문 없음)
 
 > **안드로이드 구현 가이드**: 로그아웃 시 앱 로컬의 토큰도 함께 삭제해야 합니다.
 
@@ -154,7 +145,6 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 **Response**
 ```json
 {
-  "success": true,
   "data": {
     "id": 1,
     "email": "user@kakao.com",
@@ -223,7 +213,6 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 **Response** `201 Created`
 ```json
 {
-  "success": true,
   "data": {
     "id": 42,
     "startedAt": "2026-04-14T09:30:00"
@@ -270,7 +259,6 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 **Response**
 ```json
 {
-  "success": true,
   "data": {
     "id": 42,
     "status": "COMPLETED",
@@ -304,7 +292,6 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 **Response**
 ```json
 {
-  "success": true,
   "data": {
     "content": [
       {
@@ -336,7 +323,6 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 **Response**
 ```json
 {
-  "success": true,
   "data": {
     "id": 42,
     "status": "COMPLETED",
@@ -402,7 +388,6 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 **Response** `201 Created`
 ```json
 {
-  "success": true,
   "data": {
     "id": 1,
     "goalType": "WEEKLY",
@@ -426,7 +411,6 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 **Response**
 ```json
 {
-  "success": true,
   "data": {
     "id": 1,
     "goalType": "WEEKLY",
@@ -484,7 +468,6 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 **Response**
 ```json
 {
-  "success": true,
   "data": [
     {
       "id": 1,
@@ -505,7 +488,6 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 **Response**
 ```json
 {
-  "success": true,
   "data": [
     {
       "id": 1,
@@ -538,7 +520,6 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 **Response**
 ```json
 {
-  "success": true,
   "data": {
     "nickname": "달리기왕",
     "startedAt": "2026-04-14T09:30:00",
@@ -558,7 +539,6 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 **Response** `201 Created`
 ```json
 {
-  "success": true,
   "data": {
     "shareCode": "a1b2c3d4e5f6",
     "shareUrl": "/api/shares/a1b2c3d4e5f6"
