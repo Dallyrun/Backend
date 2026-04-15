@@ -29,7 +29,3 @@ oauth:
     client-id: test-kakao-client-id
     client-secret: test-kakao-client-secret
     redirect-uri: http://localhost/oauth/kakao
-  google:
-    client-id: test-google-client-id
-    client-secret: test-google-client-secret
-    redirect-uri: http://localhost/oauth/google

@@ -53,19 +53,6 @@ class AuthControllerTest {
     }
 
     @Test
-    void googleLogin_success() throws Exception {
-        TokenResponse tokenResponse = new TokenResponse("access-token", "refresh-token");
-        when(authService.oauthLogin(eq(OAuthProvider.GOOGLE), anyString()))
-                .thenReturn(tokenResponse);
-
-        mockMvc.perform(post("/api/auth/oauth/google")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"authCode\":\"test-auth-code\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.accessToken").value("access-token"));
-    }
-
-    @Test
     void refreshToken_success() throws Exception {
         TokenResponse tokenResponse = new TokenResponse("new-access", "new-refresh");
         when(authService.refreshToken("old-refresh")).thenReturn(tokenResponse);
