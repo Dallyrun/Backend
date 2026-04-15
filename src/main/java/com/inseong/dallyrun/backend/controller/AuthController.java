@@ -44,22 +44,6 @@ public class AuthController {
     }
 
     @Operation(
-            summary = "구글 로그인",
-            description = "앱에서 구글 SDK로 받은 인증 코드(authCode)를 전달하면, "
-                    + "백엔드가 구글 서버에서 유저 정보를 조회하여 회원 가입/로그인 처리 후 JWT를 발급합니다."
-    )
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그인 성공, JWT 토큰 반환"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 인증 코드")
-    })
-    @PostMapping("/oauth/google")
-    public ResponseEntity<ApiResponse<TokenResponse>> googleLogin(
-            @Valid @RequestBody OAuthLoginRequest request) {
-        TokenResponse response = authService.oauthLogin(OAuthProvider.GOOGLE, request.authCode());
-        return ResponseEntity.ok(ApiResponse.of(response));
-    }
-
-    @Operation(
             summary = "토큰 갱신",
             description = "Access Token이 만료되었을 때 Refresh Token으로 새로운 토큰 쌍을 발급받습니다. "
                     + "기존 Refresh Token은 무효화되고 새 Refresh Token이 발급됩니다 (Rotation). "

@@ -39,7 +39,7 @@ Authorization: Bearer {accessToken}
 ```
 ┌─────────────────────────────────────────────────────┐
 │  1. 로그인                                           │
-│  앱에서 카카오/구글 SDK로 authCode 획득               │
+│  앱에서 카카오 SDK로 authCode 획득                    │
 │  → POST /api/auth/oauth/kakao (authCode 전송)       │
 │  ← accessToken + refreshToken 수신                   │
 └──────────────────────┬──────────────────────────────┘
@@ -106,10 +106,6 @@ Authorization: Bearer {accessToken}
   }
 }
 ```
-
-### `POST /api/auth/oauth/google` 🔓
-
-구글 로그인. 카카오와 동일한 형식입니다.
 
 ### `POST /api/auth/refresh` 🔓
 
@@ -579,7 +575,7 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 
 | Enum | 값 | 설명 |
 |------|---|------|
-| OAuthProvider | `KAKAO`, `GOOGLE` | 소셜 로그인 제공자 |
+| OAuthProvider | `KAKAO` | 소셜 로그인 제공자 |
 | SessionStatus | `IN_PROGRESS`, `COMPLETED` | 러닝 세션 상태 |
 | GoalType | `WEEKLY`, `MONTHLY` | 목표 유형 |
 | MetricType | `DISTANCE`, `TIME`, `COUNT` | 목표 측정 기준 (미터/초/횟수) |
