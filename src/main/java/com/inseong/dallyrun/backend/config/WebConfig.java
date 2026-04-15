@@ -21,6 +21,12 @@ public class WebConfig implements WebMvcConfigurer {
         return RestClient.builder();
     }
 
+    /**
+     * CORS 정책 설정.
+     * /api/** 경로에 대해 환경변수로 지정된 오리진만 허용하며,
+     * 인증 쿠키 전송(allowCredentials)을 위해 와일드카드(*) 오리진은 사용하지 않는다.
+     * preflight 캐시(maxAge)는 1시간으로 설정하여 불필요한 OPTIONS 요청을 줄인다.
+     */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")

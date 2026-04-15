@@ -83,6 +83,11 @@ public class ShareServiceImpl implements ShareService {
         return session;
     }
 
+    /**
+     * 16자리 랜덤 공유 코드를 생성한다.
+     * SecureRandom으로 영문 대소문자+숫자(62종) 중 무작위 선택하여 URL-safe한 코드를 만든다.
+     * 62^16 ≈ 4.7×10^28 조합으로 충돌 확률이 극히 낮다.
+     */
     private String generateShareCode() {
         StringBuilder sb = new StringBuilder(SHARE_CODE_LENGTH);
         for (int i = 0; i < SHARE_CODE_LENGTH; i++) {

@@ -73,6 +73,14 @@ public class AuthServiceImpl implements AuthService {
         return issueTokens(member.getId());
     }
 
+    /**
+     * Refresh Token Rotation 방식으로 토큰을 갱신한다.
+     *
+     * <p>검증 흐름:
+     * 1) 토큰 서명·만료 유효성 검사
+     * 2) Redis에 저장된 토큰과 일치 여부 확인 (탈취된 토큰 재사용 방지)
+     * 3) 새 access/refresh 토큰 쌍 발급 → Redis의 기존 refresh 토큰을 새 토큰으로 교체
+     */
     @Override
     public TokenResponse refreshToken(String refreshToken) {
         if (!jwtTokenProvider.validateToken(refreshToken)) {

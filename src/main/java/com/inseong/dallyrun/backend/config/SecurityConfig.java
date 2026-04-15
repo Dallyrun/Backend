@@ -23,6 +23,16 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
+    /**
+     * Spring Security 필터 체인 설정.
+     *
+     * <p>주요 정책:
+     * - CSRF 비활성화: JWT 기반 Stateless 인증이므로 CSRF 토큰 불필요
+     * - 세션 미사용: STATELESS 정책으로 서버 측 세션 생성 방지
+     * - 인증 불필요 경로: 로그인(/api/auth/**), 공유 링크 조회, Swagger UI
+     * - 미인증 요청 시 401 응답 (로그인 폼 리다이렉트 대신)
+     * - JWT 필터를 UsernamePasswordAuthenticationFilter 앞에 배치
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http

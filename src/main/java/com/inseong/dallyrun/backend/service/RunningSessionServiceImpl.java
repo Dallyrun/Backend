@@ -56,6 +56,16 @@ public class RunningSessionServiceImpl implements RunningSessionService {
         return RunningSessionStartResponse.from(session);
     }
 
+    /**
+     * 러닝 세션을 종료하고 결과를 계산한다.
+     *
+     * <p>처리 단계:
+     * 1) GPS 좌표 데이터를 엔티티로 변환 후 일괄 저장
+     * 2) Haversine 공식으로 총 이동 거리(m) 산출
+     * 3) 소요 시간(초)과 평균 페이스(min/km) 계산
+     * 4) 세션 상태를 COMPLETED로 전환
+     * 5) 배지 수여 조건 평가
+     */
     @Override
     public RunningSessionResponse endSession(Long memberId, Long sessionId, RunningSessionEndRequest request) {
         RunningSession session = getOwnedSession(memberId, sessionId);
@@ -64,6 +74,7 @@ public class RunningSessionServiceImpl implements RunningSessionService {
             throw new BusinessException(ErrorCode.RUNNING_SESSION_ALREADY_COMPLETED);
         }
 
+        // 1단계: GPS 좌표 변환 및 저장
         List<GpsPoint> gpsPoints = new ArrayList<>();
         List<double[]> coordinates = new ArrayList<>();
 
@@ -76,16 +87,20 @@ public class RunningSessionServiceImpl implements RunningSessionService {
 
         gpsPointRepository.saveAll(gpsPoints);
 
+        // 2~3단계: 거리·시간·페이스 계산
         LocalDateTime endTime = LocalDateTime.now();
         double distanceMeters = GeoUtils.calculateTotalDistance(coordinates);
         long durationSeconds = Duration.between(session.getStartedAt(), endTime).getSeconds();
+        // 평균 페이스 = 소요 시간(분) / 거리(km), 단위: min/km
         Double avgPace = null;
         if (distanceMeters > 0) {
             avgPace = (durationSeconds / 60.0) / (distanceMeters / 1000.0);
         }
 
+        // 4단계: 세션 완료 처리
         session.complete(endTime, distanceMeters, durationSeconds, avgPace);
 
+        // 5단계: 배지 수여 조건 평가
         badgeService.checkAndAwardBadges(memberId, session);
 
         return RunningSessionResponse.from(session);

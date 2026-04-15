@@ -7,6 +7,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 러닝 세션 엔티티.
+ * 생성 시 IN_PROGRESS 상태로 시작하며, 종료 시 거리·시간·페이스를 기록하고 COMPLETED로 전환된다.
+ * GpsPoint와 1:N 관계를 가지며, sequenceIndex 오름차순으로 정렬된다.
+ */
 @Entity
 @Table(name = "running_session")
 public class RunningSession extends BaseTimeEntity {

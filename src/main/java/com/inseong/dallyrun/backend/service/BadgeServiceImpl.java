@@ -53,6 +53,17 @@ public class BadgeServiceImpl implements BadgeService {
                 .toList();
     }
 
+    /**
+     * 러닝 세션 완료 시 배지 수여 조건을 평가한다.
+     *
+     * <p>전체 배지를 순회하며 아직 미획득인 배지에 대해 conditionType별로 달성 여부를 판단한다:
+     * <ul>
+     *   <li>TOTAL_COUNT — 누적 완료 세션 수</li>
+     *   <li>TOTAL_DISTANCE — 누적 총 거리(m)</li>
+     *   <li>SINGLE_DISTANCE — 현재 세션의 단일 거리(m)</li>
+     *   <li>STREAK_DAYS — 연속 러닝 일수</li>
+     * </ul>
+     */
     @Override
     public void checkAndAwardBadges(Long memberId, RunningSession session) {
         Member member = memberRepository.findById(memberId)
@@ -61,6 +72,7 @@ public class BadgeServiceImpl implements BadgeService {
         List<Badge> allBadges = badgeRepository.findAll();
 
         for (Badge badge : allBadges) {
+            // 이미 획득한 배지는 건너뛴다
             if (memberBadgeRepository.existsByMemberIdAndBadgeId(memberId, badge.getId())) {
                 continue;
             }
@@ -90,6 +102,10 @@ public class BadgeServiceImpl implements BadgeService {
         }
     }
 
+    /**
+     * 최근 러닝 날짜 기준으로 연속 러닝 일수를 계산한다.
+     * 날짜 리스트는 최신순(내림차순) 정렬을 전제하며, 하루 간격이 끊기는 시점까지 카운트한다.
+     */
     private int calculateStreak(Long memberId) {
         List<LocalDate> runDates = runningSessionRepository.findDistinctRunDates(memberId);
         if (runDates.isEmpty()) {

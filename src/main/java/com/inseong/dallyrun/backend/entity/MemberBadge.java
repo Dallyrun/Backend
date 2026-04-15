@@ -4,6 +4,11 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * 회원-배지 연결 엔티티 (다대다 관계 매핑 테이블).
+ * member_id + badge_id 유니크 제약으로 동일 배지 중복 수여를 방지한다.
+ * achievedAt에 배지 획득 시각을 기록한다.
+ */
 @Entity
 @Table(name = "member_badge", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"member_id", "badge_id"})

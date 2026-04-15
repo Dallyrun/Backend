@@ -85,6 +85,14 @@ public class GoalServiceImpl implements GoalService {
         return goal;
     }
 
+    /**
+     * 목표 기간(startDate~endDate) 내 현재 달성값을 metricType에 따라 조회한다.
+     * <ul>
+     *   <li>DISTANCE — 기간 내 총 이동 거리(m)</li>
+     *   <li>TIME — 기간 내 총 러닝 시간(초)</li>
+     *   <li>COUNT — 기간 내 완료 세션 수</li>
+     * </ul>
+     */
     private double calculateCurrentValue(Long memberId, Goal goal) {
         LocalDateTime start = goal.getStartDate().atStartOfDay();
         LocalDateTime end = goal.getEndDate().atTime(LocalTime.MAX);

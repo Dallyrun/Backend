@@ -3,6 +3,11 @@ package com.inseong.dallyrun.backend.entity;
 import com.inseong.dallyrun.backend.entity.enums.OAuthProvider;
 import jakarta.persistence.*;
 
+/**
+ * 회원 엔티티.
+ * OAuth 소셜 로그인으로만 가입하며, provider+providerId 조합으로 고유 식별한다.
+ * RunningSession, Goal, MemberBadge와 1:N 관계를 갖는다.
+ */
 @Entity
 @Table(name = "member", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"oauth_provider", "oauth_provider_id"})

@@ -6,6 +6,11 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 
+/**
+ * 러닝 목표 엔티티.
+ * 기간(startDate~endDate) 내에 특정 지표(거리/시간/횟수)의 목표값 달성을 추적한다.
+ * 삭제 시 물리 삭제 대신 active=false로 비활성화(논리 삭제)한다.
+ */
 @Entity
 @Table(name = "goal")
 public class Goal extends BaseTimeEntity {

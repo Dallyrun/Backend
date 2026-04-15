@@ -3,6 +3,11 @@ package com.inseong.dallyrun.backend.entity;
 import com.inseong.dallyrun.backend.entity.enums.ConditionType;
 import jakarta.persistence.*;
 
+/**
+ * 배지 정의 엔티티.
+ * conditionType(달성 조건 유형)과 conditionValue(달성 기준값)로 수여 조건을 정의한다.
+ * 배지 데이터는 사전 정의되며, 회원의 배지 획득 이력은 MemberBadge에서 관리한다.
+ */
 @Entity
 @Table(name = "badge")
 public class Badge extends BaseTimeEntity {
