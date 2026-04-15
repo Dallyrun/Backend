@@ -10,8 +10,6 @@ public enum ErrorCode {
 
     // Auth — 인증/인가 관련 오류
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
-    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 토큰입니다."),
-    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),
     INVALID_OAUTH_CODE(HttpStatus.BAD_REQUEST, "유효하지 않은 인증 코드입니다."),
 
     // Member — 회원 관련 오류
@@ -24,9 +22,6 @@ public enum ErrorCode {
 
     // Goal — 목표 관련 오류
     GOAL_NOT_FOUND(HttpStatus.NOT_FOUND, "목표를 찾을 수 없습니다."),
-
-    // Badge — 배지 관련 오류
-    BADGE_NOT_FOUND(HttpStatus.NOT_FOUND, "뱃지를 찾을 수 없습니다."),
 
     // Share — 공유 링크 관련 오류
     SHARE_NOT_FOUND(HttpStatus.NOT_FOUND, "공유 링크를 찾을 수 없습니다."),

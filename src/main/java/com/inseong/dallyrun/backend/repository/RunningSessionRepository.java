@@ -18,14 +18,6 @@ public interface RunningSessionRepository extends JpaRepository<RunningSession, 
 
     Page<RunningSession> findByMemberIdOrderByStartedAtDesc(Long memberId, Pageable pageable);
 
-    @Query("SELECT rs FROM RunningSession rs WHERE rs.member.id = :memberId " +
-            "AND rs.status = 'COMPLETED' " +
-            "AND rs.startedAt BETWEEN :start AND :end")
-    List<RunningSession> findCompletedSessionsBetween(
-            @Param("memberId") Long memberId,
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end);
-
     @Query("SELECT COUNT(rs) FROM RunningSession rs WHERE rs.member.id = :memberId " +
             "AND rs.status = 'COMPLETED'")
     long countCompletedByMemberId(@Param("memberId") Long memberId);
