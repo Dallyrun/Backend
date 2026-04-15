@@ -13,6 +13,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.dao.DataIntegrityViolationException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -52,13 +54,21 @@ public class AuthServiceImpl implements AuthService {
 
         Member member = memberRepository
                 .findByOauthProviderAndOauthProviderId(provider, userInfo.providerId())
-                .orElseGet(() -> memberRepository.save(new Member(
-                        userInfo.email(),
-                        userInfo.nickname(),
-                        userInfo.profileImageUrl(),
-                        userInfo.provider(),
-                        userInfo.providerId()
-                )));
+                .orElseGet(() -> {
+                    try {
+                        return memberRepository.save(new Member(
+                                userInfo.email(),
+                                userInfo.nickname(),
+                                userInfo.profileImageUrl(),
+                                userInfo.provider(),
+                                userInfo.providerId()
+                        ));
+                    } catch (DataIntegrityViolationException e) {
+                        return memberRepository
+                                .findByOauthProviderAndOauthProviderId(provider, userInfo.providerId())
+                                .orElseThrow(() -> new BusinessException(ErrorCode.INTERNAL_ERROR));
+                    }
+                });
 
         return issueTokens(member.getId());
     }

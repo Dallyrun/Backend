@@ -34,6 +34,7 @@ public class RunningSession extends BaseTimeEntity {
 
     private Double avgPace;
 
+    @Column(length = 500)
     private String memo;
 
     @OneToMany(mappedBy = "runningSession", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -49,9 +50,9 @@ public class RunningSession extends BaseTimeEntity {
         this.startedAt = LocalDateTime.now();
     }
 
-    public void complete(Double distanceMeters, Long durationSeconds, Double avgPace) {
+    public void complete(LocalDateTime endedAt, Double distanceMeters, Long durationSeconds, Double avgPace) {
         this.status = SessionStatus.COMPLETED;
-        this.endedAt = LocalDateTime.now();
+        this.endedAt = endedAt;
         this.distanceMeters = distanceMeters;
         this.durationSeconds = durationSeconds;
         this.avgPace = avgPace;

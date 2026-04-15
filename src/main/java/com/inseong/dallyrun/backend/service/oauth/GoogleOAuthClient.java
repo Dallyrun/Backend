@@ -70,7 +70,7 @@ public class GoogleOAuthClient implements OAuthClient {
                     .body(new ParameterizedTypeReference<>() {});
 
             String id = (String) response.get("id");
-            String email = (String) response.getOrDefault("email", id + "@google.user");
+            String email = (String) response.getOrDefault("email", "google_" + id + "@noreply.dallyrun.app");
             String name = (String) response.getOrDefault("name", "Google 사용자");
             String picture = (String) response.get("picture");
 

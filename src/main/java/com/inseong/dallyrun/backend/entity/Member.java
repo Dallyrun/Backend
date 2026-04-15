@@ -13,19 +13,20 @@ public class Member extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String nickname;
 
+    @Column(length = 500)
     private String profileImageUrl;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "oauth_provider", nullable = false)
     private OAuthProvider oauthProvider;
 
-    @Column(name = "oauth_provider_id", nullable = false)
+    @Column(name = "oauth_provider_id", nullable = false, length = 255)
     private String oauthProviderId;
 
     protected Member() {

@@ -104,7 +104,7 @@ public class RunningSessionController {
     public ResponseEntity<ApiResponse<RunningSessionResponse>> updateMemo(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long id,
-            @RequestBody MemoUpdateRequest request) {
+            @Valid @RequestBody MemoUpdateRequest request) {
         RunningSessionResponse response = runningSessionService.updateMemo(
                 userDetails.getMemberId(), id, request);
         return ResponseEntity.ok(ApiResponse.of(response));

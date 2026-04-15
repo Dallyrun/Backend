@@ -1,5 +1,6 @@
 package com.inseong.dallyrun.backend.service;
 
+import com.inseong.dallyrun.backend.config.ShareConfig;
 import com.inseong.dallyrun.backend.dto.response.ShareDataResponse;
 import com.inseong.dallyrun.backend.dto.response.ShareLinkResponse;
 import com.inseong.dallyrun.backend.entity.RunningSession;
@@ -10,26 +11,32 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
+import java.security.SecureRandom;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 public class ShareServiceImpl implements ShareService {
 
     private static final String SHARE_PREFIX = "share:";
-    private static final long SHARE_TTL_DAYS = 30;
+    private static final String ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private static final int SHARE_CODE_LENGTH = 16;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final RunningSessionRepository runningSessionRepository;
     private final StringRedisTemplate redisTemplate;
+    private final ShareConfig shareConfig;
 
     public ShareServiceImpl(RunningSessionRepository runningSessionRepository,
-                            StringRedisTemplate redisTemplate) {
+                            StringRedisTemplate redisTemplate,
+                            ShareConfig shareConfig) {
         this.runningSessionRepository = runningSessionRepository;
         this.redisTemplate = redisTemplate;
+        this.shareConfig = shareConfig;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ShareDataResponse getShareData(Long memberId, Long sessionId) {
         RunningSession session = getOwnedSession(memberId, sessionId);
         return ShareDataResponse.of(session.getMember().getNickname(), session);
@@ -39,12 +46,12 @@ public class ShareServiceImpl implements ShareService {
     public ShareLinkResponse createShareLink(Long memberId, Long sessionId) {
         RunningSession session = getOwnedSession(memberId, sessionId);
 
-        String shareCode = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+        String shareCode = generateShareCode();
 
         redisTemplate.opsForValue().set(
                 SHARE_PREFIX + shareCode,
                 session.getId().toString(),
-                SHARE_TTL_DAYS,
+                shareConfig.ttlDays(),
                 TimeUnit.DAYS
         );
 
@@ -53,6 +60,7 @@ public class ShareServiceImpl implements ShareService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ShareDataResponse getSharedData(String shareCode) {
         String sessionIdStr = redisTemplate.opsForValue().get(SHARE_PREFIX + shareCode);
         if (sessionIdStr == null) {
@@ -73,5 +81,13 @@ public class ShareServiceImpl implements ShareService {
             throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
         return session;
+    }
+
+    private String generateShareCode() {
+        StringBuilder sb = new StringBuilder(SHARE_CODE_LENGTH);
+        for (int i = 0; i < SHARE_CODE_LENGTH; i++) {
+            sb.append(ALPHANUMERIC.charAt(SECURE_RANDOM.nextInt(ALPHANUMERIC.length())));
+        }
+        return sb.toString();
     }
 }

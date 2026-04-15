@@ -5,22 +5,23 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "badge")
-public class Badge {
+public class Badge extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 100)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 500)
     private String description;
 
+    @Column(length = 500)
     private String iconUrl;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private ConditionType conditionType;
 
     @Column(nullable = false)

@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,14 +76,15 @@ public class RunningSessionServiceImpl implements RunningSessionService {
 
         gpsPointRepository.saveAll(gpsPoints);
 
+        LocalDateTime endTime = LocalDateTime.now();
         double distanceMeters = GeoUtils.calculateTotalDistance(coordinates);
-        long durationSeconds = Duration.between(session.getStartedAt(), java.time.LocalDateTime.now()).getSeconds();
+        long durationSeconds = Duration.between(session.getStartedAt(), endTime).getSeconds();
         Double avgPace = null;
         if (distanceMeters > 0) {
             avgPace = (durationSeconds / 60.0) / (distanceMeters / 1000.0);
         }
 
-        session.complete(distanceMeters, durationSeconds, avgPace);
+        session.complete(endTime, distanceMeters, durationSeconds, avgPace);
 
         badgeService.checkAndAwardBadges(memberId, session);
 

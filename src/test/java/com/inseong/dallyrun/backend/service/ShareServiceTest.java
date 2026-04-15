@@ -1,5 +1,6 @@
 package com.inseong.dallyrun.backend.service;
 
+import com.inseong.dallyrun.backend.config.ShareConfig;
 import com.inseong.dallyrun.backend.dto.response.ShareDataResponse;
 import com.inseong.dallyrun.backend.dto.response.ShareLinkResponse;
 import com.inseong.dallyrun.backend.entity.Member;
@@ -16,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -38,7 +40,8 @@ class ShareServiceTest {
     @BeforeEach
     void setUp() {
         lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        shareService = new ShareServiceImpl(runningSessionRepository, redisTemplate);
+        ShareConfig shareConfig = new ShareConfig(30);
+        shareService = new ShareServiceImpl(runningSessionRepository, redisTemplate, shareConfig);
         testMember = new Member("test@test.com", "테스터", null, OAuthProvider.KAKAO, "kakao-1");
         TestEntityHelper.setId(testMember, 1L);
     }
@@ -47,7 +50,7 @@ class ShareServiceTest {
     void getShareData_success() {
         RunningSession session = new RunningSession(testMember);
         TestEntityHelper.setId(session, 1L);
-        session.complete(5000.0, 1800L, 6.0);
+        session.complete(LocalDateTime.now(), 5000.0, 1800L, 6.0);
         when(runningSessionRepository.findById(1L)).thenReturn(Optional.of(session));
 
         ShareDataResponse response = shareService.getShareData(1L, 1L);
@@ -65,7 +68,7 @@ class ShareServiceTest {
         ShareLinkResponse response = shareService.createShareLink(1L, 1L);
 
         assertNotNull(response.shareCode());
-        assertEquals(12, response.shareCode().length());
+        assertEquals(16, response.shareCode().length());
         assertTrue(response.shareUrl().contains(response.shareCode()));
         verify(valueOperations).set(anyString(), anyString(), anyLong(), any());
     }
@@ -74,7 +77,7 @@ class ShareServiceTest {
     void getSharedData_success() {
         RunningSession session = new RunningSession(testMember);
         TestEntityHelper.setId(session, 1L);
-        session.complete(5000.0, 1800L, 6.0);
+        session.complete(LocalDateTime.now(), 5000.0, 1800L, 6.0);
         when(valueOperations.get("share:abc123")).thenReturn("1");
         when(runningSessionRepository.findById(1L)).thenReturn(Optional.of(session));
 

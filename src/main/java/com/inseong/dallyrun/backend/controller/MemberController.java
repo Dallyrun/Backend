@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Member", description = "회원 API — 프로필 조회/수정, 계정 삭제")
@@ -42,7 +43,7 @@ public class MemberController {
     @PatchMapping("/me")
     public ResponseEntity<ApiResponse<MemberResponse>> updateProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody MemberUpdateRequest request) {
+            @Valid @RequestBody MemberUpdateRequest request) {
         MemberResponse response = memberService.updateProfile(userDetails.getMemberId(), request);
         return ResponseEntity.ok(ApiResponse.of(response));
     }

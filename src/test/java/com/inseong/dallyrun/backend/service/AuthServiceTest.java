@@ -16,6 +16,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
+import org.springframework.dao.DataIntegrityViolationException;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -124,5 +126,26 @@ class AuthServiceTest {
         authService.logout(1L);
 
         verify(redisTemplate).delete("refresh:1");
+    }
+
+    @Test
+    void oauthLogin_raceCondition_retriesFind() {
+        OAuthUserInfo userInfo = new OAuthUserInfo(
+                OAuthProvider.KAKAO, "kakao-456", "race@kakao.com", "레이서", null);
+        when(kakaoClient.getUserInfo("auth-code")).thenReturn(userInfo);
+        when(memberRepository.findByOauthProviderAndOauthProviderId(OAuthProvider.KAKAO, "kakao-456"))
+                .thenReturn(Optional.empty())
+                .thenReturn(Optional.of(new Member("race@kakao.com", "레이서", null, OAuthProvider.KAKAO, "kakao-456")));
+        when(memberRepository.save(any(Member.class)))
+                .thenThrow(new DataIntegrityViolationException("duplicate key"));
+        when(jwtTokenProvider.createAccessToken(any())).thenReturn("access-token");
+        when(jwtTokenProvider.createRefreshToken(any())).thenReturn("refresh-token");
+        when(jwtTokenProvider.getRefreshTokenExpiry()).thenReturn(1209600000L);
+
+        TokenResponse response = authService.oauthLogin(OAuthProvider.KAKAO, "auth-code");
+
+        assertNotNull(response);
+        verify(memberRepository, times(2))
+                .findByOauthProviderAndOauthProviderId(OAuthProvider.KAKAO, "kakao-456");
     }
 }

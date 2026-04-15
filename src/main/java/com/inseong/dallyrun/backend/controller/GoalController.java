@@ -78,7 +78,7 @@ public class GoalController {
     public ResponseEntity<ApiResponse<GoalResponse>> updateGoal(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long id,
-            @RequestBody GoalUpdateRequest request) {
+            @Valid @RequestBody GoalUpdateRequest request) {
         GoalResponse response = goalService.updateGoal(userDetails.getMemberId(), id, request);
         return ResponseEntity.ok(ApiResponse.of(response));
     }

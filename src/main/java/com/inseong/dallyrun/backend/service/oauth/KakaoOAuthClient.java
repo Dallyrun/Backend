@@ -75,7 +75,7 @@ public class KakaoOAuthClient implements OAuthClient {
             Map<String, Object> kakaoAccount = (Map<String, Object>) response.get("kakao_account");
             Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
 
-            String email = (String) kakaoAccount.getOrDefault("email", id + "@kakao.user");
+            String email = (String) kakaoAccount.getOrDefault("email", "kakao_" + id + "@noreply.dallyrun.app");
             String nickname = (String) profile.getOrDefault("nickname", "카카오 사용자");
             String profileImageUrl = (String) profile.get("profile_image_url");
 
