@@ -1,6 +1,7 @@
 package com.inseong.dallyrun.backend.service;
 
 import com.inseong.dallyrun.backend.dto.request.GoalCreateRequest;
+import com.inseong.dallyrun.backend.dto.request.GoalUpdateRequest;
 import com.inseong.dallyrun.backend.dto.response.GoalProgressResponse;
 import com.inseong.dallyrun.backend.dto.response.GoalResponse;
 import com.inseong.dallyrun.backend.entity.Goal;
@@ -136,5 +137,44 @@ class GoalServiceTest {
         when(goalRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(BusinessException.class, () -> goalService.getGoalProgress(1L, 99L));
+    }
+
+    @Test
+    void createGoal_startDateAfterEndDate_throwsException() {
+        GoalCreateRequest request = new GoalCreateRequest(
+                GoalType.WEEKLY, MetricType.DISTANCE, 10000.0,
+                LocalDate.of(2026, 4, 20), LocalDate.of(2026, 4, 13));
+
+        assertThrows(BusinessException.class, () -> goalService.createGoal(1L, request));
+        verify(goalRepository, never()).save(any(Goal.class));
+    }
+
+    @Test
+    void updateGoal_startDateAfterEndDate_throwsException() {
+        Goal goal = new Goal(testMember, GoalType.WEEKLY, MetricType.DISTANCE, 10000.0,
+                LocalDate.of(2026, 4, 13), LocalDate.of(2026, 4, 19));
+        TestEntityHelper.setId(goal, 1L);
+        when(goalRepository.findById(1L)).thenReturn(Optional.of(goal));
+
+        GoalUpdateRequest request = new GoalUpdateRequest(
+                null, null, null,
+                LocalDate.of(2026, 4, 25), LocalDate.of(2026, 4, 20));
+
+        assertThrows(BusinessException.class, () -> goalService.updateGoal(1L, 1L, request));
+    }
+
+    @Test
+    void updateGoal_partialDateUpdate_comparesWithExistingDate() {
+        // 기존: 4/13 ~ 4/19, 요청: startDate=4/25만 제공 → effectiveEnd=4/19로 비교되어 예외 발생해야 한다.
+        Goal goal = new Goal(testMember, GoalType.WEEKLY, MetricType.DISTANCE, 10000.0,
+                LocalDate.of(2026, 4, 13), LocalDate.of(2026, 4, 19));
+        TestEntityHelper.setId(goal, 1L);
+        when(goalRepository.findById(1L)).thenReturn(Optional.of(goal));
+
+        GoalUpdateRequest request = new GoalUpdateRequest(
+                null, null, null,
+                LocalDate.of(2026, 4, 25), null);
+
+        assertThrows(BusinessException.class, () -> goalService.updateGoal(1L, 1L, request));
     }
 }
