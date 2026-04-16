@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -70,10 +71,12 @@ public class BadgeServiceImpl implements BadgeService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
         List<Badge> allBadges = badgeRepository.findAll();
+        // N+1 방지: 획득한 배지 ID 집합을 한 번에 조회
+        Set<Long> ownedBadgeIds = memberBadgeRepository.findBadgeIdsByMemberId(memberId);
 
         for (Badge badge : allBadges) {
             // 이미 획득한 배지는 건너뛴다
-            if (memberBadgeRepository.existsByMemberIdAndBadgeId(memberId, badge.getId())) {
+            if (ownedBadgeIds.contains(badge.getId())) {
                 continue;
             }
 
