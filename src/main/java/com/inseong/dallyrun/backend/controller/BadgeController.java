@@ -43,7 +43,7 @@ public class BadgeController {
                     + "각 뱃지의 상세 정보와 획득 시각(achievedAt)이 포함됩니다.\n\n"
                     + "**팁**: 러닝 종료 후 이 API를 호출하여 이전 목록과 비교하면 '새 뱃지 획득' 알림을 표시할 수 있습니다."
     )
-    @GetMapping("/api/members/me/badges")
+    @GetMapping("/api/badges/me")
     public ResponseEntity<ApiResponse<List<MemberBadgeResponse>>> getMyBadges(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         List<MemberBadgeResponse> response = badgeService.getMemberBadges(userDetails.getMemberId());
