@@ -15,6 +15,7 @@ import com.inseong.dallyrun.backend.repository.RunningSessionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -37,6 +38,8 @@ public class GoalServiceImpl implements GoalService {
 
     @Override
     public GoalResponse createGoal(Long memberId, GoalCreateRequest request) {
+        validateDateRange(request.startDate(), request.endDate());
+
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
@@ -65,6 +68,11 @@ public class GoalServiceImpl implements GoalService {
     @Override
     public GoalResponse updateGoal(Long memberId, Long goalId, GoalUpdateRequest request) {
         Goal goal = getOwnedGoal(memberId, goalId);
+        // 부분 업데이트 대상에 기존 값을 합쳐 최종 날짜 범위를 검증한다.
+        LocalDate effectiveStart = request.startDate() != null ? request.startDate() : goal.getStartDate();
+        LocalDate effectiveEnd = request.endDate() != null ? request.endDate() : goal.getEndDate();
+        validateDateRange(effectiveStart, effectiveEnd);
+
         goal.update(request.goalType(), request.metricType(),
                 request.targetValue(), request.startDate(), request.endDate());
         return GoalResponse.from(goal);
@@ -74,6 +82,15 @@ public class GoalServiceImpl implements GoalService {
     public void deleteGoal(Long memberId, Long goalId) {
         Goal goal = getOwnedGoal(memberId, goalId);
         goal.deactivate();
+    }
+
+    /**
+     * 목표 기간의 유효성을 검증한다. 시작일이 종료일보다 이후일 수 없다.
+     */
+    private void validateDateRange(LocalDate startDate, LocalDate endDate) {
+        if (startDate.isAfter(endDate)) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT);
+        }
     }
 
     private Goal getOwnedGoal(Long memberId, Long goalId) {

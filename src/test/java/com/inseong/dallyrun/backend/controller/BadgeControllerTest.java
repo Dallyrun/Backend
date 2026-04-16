@@ -61,7 +61,7 @@ class BadgeControllerTest {
         MemberBadgeResponse memberBadge = new MemberBadgeResponse(1L, badge, LocalDateTime.now());
         when(badgeService.getMemberBadges(1L)).thenReturn(List.of(memberBadge));
 
-        mockMvc.perform(get("/api/members/me/badges")
+        mockMvc.perform(get("/api/badges/me")
                         .with(user(testUser)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].badge.name").value("첫 러닝"));
@@ -69,7 +69,7 @@ class BadgeControllerTest {
 
     @Test
     void getMyBadges_noAuth_returns401() throws Exception {
-        mockMvc.perform(get("/api/members/me/badges"))
+        mockMvc.perform(get("/api/badges/me"))
                 .andExpect(status().isUnauthorized());
     }
 }

@@ -92,4 +92,13 @@ class ShareServiceTest {
 
         assertThrows(BusinessException.class, () -> shareService.getSharedData("invalid"));
     }
+
+    @Test
+    void getSharedData_malformedRedisValue_throwsShareNotFound() {
+        // Redis 값이 손상되어 숫자로 파싱 불가능한 경우에도 404 응답이 되어야 한다.
+        when(valueOperations.get("share:corrupted")).thenReturn("not-a-number");
+
+        assertThrows(BusinessException.class, () -> shareService.getSharedData("corrupted"));
+        verify(runningSessionRepository, never()).findById(any());
+    }
 }

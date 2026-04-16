@@ -67,7 +67,14 @@ public class ShareServiceImpl implements ShareService {
             throw new BusinessException(ErrorCode.SHARE_NOT_FOUND);
         }
 
-        Long sessionId = Long.parseLong(sessionIdStr);
+        // Redis 값이 손상되었거나 숫자 형식이 아닌 경우에도 일관된 404 응답을 반환한다.
+        Long sessionId;
+        try {
+            sessionId = Long.parseLong(sessionIdStr);
+        } catch (NumberFormatException e) {
+            throw new BusinessException(ErrorCode.SHARE_NOT_FOUND);
+        }
+
         RunningSession session = runningSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RUNNING_SESSION_NOT_FOUND));
 
