@@ -244,8 +244,8 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 
 | 필드 | 필수 | 설명 |
 |------|------|------|
-| `latitude` | O | 위도 |
-| `longitude` | O | 경도 |
+| `latitude` | O | 위도 (-90 ~ 90) |
+| `longitude` | O | 경도 (-180 ~ 180) |
 | `altitude` | X | 고도 (미터). GPS에서 제공 안 하면 null |
 | `recordedAt` | X | GPS 좌표가 기록된 시각 |
 | `sequenceIndex` | O | 순서 (0부터 시작). 경로 순서 보장용 |
@@ -378,7 +378,7 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 | `goalType` | `WEEKLY` / `MONTHLY` | 주간 / 월간 |
 | `metricType` | `DISTANCE` / `TIME` / `COUNT` | 거리(m) / 시간(초) / 횟수 |
 | `targetValue` | 숫자 | DISTANCE=미터, TIME=초, COUNT=횟수 |
-| `startDate` | `yyyy-MM-dd` | 시작일 |
+| `startDate` | `yyyy-MM-dd` | 시작일 (종료일 이전이어야 함) |
 | `endDate` | `yyyy-MM-dd` | 종료일 |
 
 **Response** `201 Created`
@@ -477,7 +477,7 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 }
 ```
 
-### `GET /api/members/me/badges`
+### `GET /api/badges/me`
 
 내가 획득한 뱃지 목록.
 
@@ -557,13 +557,10 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 | 400 | INVALID_INPUT | 잘못된 입력입니다. |
 | 400 | INVALID_OAUTH_CODE | 유효하지 않은 인증 코드입니다. |
 | 401 | INVALID_TOKEN | 유효하지 않은 토큰입니다. |
-| 401 | EXPIRED_TOKEN | 만료된 토큰입니다. |
-| 401 | UNAUTHORIZED | 인증이 필요합니다. |
 | 403 | ACCESS_DENIED | 접근 권한이 없습니다. |
 | 404 | MEMBER_NOT_FOUND | 회원을 찾을 수 없습니다. |
 | 404 | RUNNING_SESSION_NOT_FOUND | 러닝 세션을 찾을 수 없습니다. |
 | 404 | GOAL_NOT_FOUND | 목표를 찾을 수 없습니다. |
-| 404 | BADGE_NOT_FOUND | 뱃지를 찾을 수 없습니다. |
 | 404 | SHARE_NOT_FOUND | 공유 링크를 찾을 수 없습니다. |
 | 409 | RUNNING_SESSION_ALREADY_ACTIVE | 이미 진행 중인 러닝 세션이 있습니다. |
 | 409 | RUNNING_SESSION_ALREADY_COMPLETED | 이미 종료된 러닝 세션입니다. |
