@@ -54,4 +54,8 @@ replay_pid*
 .DS_Store
 
 .claude/
-CLAUDE.md
+
+# Local environment files (do not commit actual values)
+.env
+.env.local
+.env.*.local

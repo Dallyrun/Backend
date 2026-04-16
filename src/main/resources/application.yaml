@@ -2,10 +2,14 @@ spring:
   application:
     name: dallyrun-backend
 
+  # 루트의 .env 파일을 선택적으로 로드 (로컬 개발용). 운영은 환경변수로 주입.
+  config:
+    import: optional:file:./.env[.properties]
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/dallyrun
-    username: ${DB_USERNAME:dallyrun}
-    password: ${DB_PASSWORD:dallyrun}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: ${DB_POOL_MAX:10}
@@ -36,7 +40,7 @@ server:
   port: 8080
 
 jwt:
-  secret: ${JWT_SECRET:dev-secret-key-min-256-bits-long-for-hmac-sha}
+  secret: ${JWT_SECRET}
   access-token-expiry: 1800000
   refresh-token-expiry: 1209600000
 
