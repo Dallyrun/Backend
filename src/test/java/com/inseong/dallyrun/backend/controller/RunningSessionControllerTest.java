@@ -101,4 +101,40 @@ class RunningSessionControllerTest {
         mockMvc.perform(post("/api/running-sessions"))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void endSession_invalidLatitude_returns400() throws Exception {
+        // 위도가 허용 범위(-90 ~ 90)를 벗어나면 400 응답
+        String body = """
+                {
+                    "gpsPoints": [
+                        {"latitude": 100.0, "longitude": 126.9784, "altitude": 10.0, "sequenceIndex": 0}
+                    ]
+                }
+                """;
+
+        mockMvc.perform(patch("/api/running-sessions/1/end")
+                        .with(user(testUser))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void endSession_invalidLongitude_returns400() throws Exception {
+        // 경도가 허용 범위(-180 ~ 180)를 벗어나면 400 응답
+        String body = """
+                {
+                    "gpsPoints": [
+                        {"latitude": 37.5666, "longitude": 200.0, "altitude": 10.0, "sequenceIndex": 0}
+                    ]
+                }
+                """;
+
+        mockMvc.perform(patch("/api/running-sessions/1/end")
+                        .with(user(testUser))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
 }
