@@ -5,7 +5,6 @@ import com.inseong.dallyrun.backend.dto.response.ShareDataResponse;
 import com.inseong.dallyrun.backend.dto.response.ShareLinkResponse;
 import com.inseong.dallyrun.backend.entity.Member;
 import com.inseong.dallyrun.backend.entity.RunningSession;
-import com.inseong.dallyrun.backend.entity.enums.OAuthProvider;
 import com.inseong.dallyrun.backend.exception.BusinessException;
 import com.inseong.dallyrun.backend.repository.RunningSessionRepository;
 import com.inseong.dallyrun.backend.support.TestEntityHelper;
@@ -42,7 +41,7 @@ class ShareServiceTest {
         lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         ShareConfig shareConfig = new ShareConfig(30);
         shareService = new ShareServiceImpl(runningSessionRepository, redisTemplate, shareConfig);
-        testMember = new Member("test@test.com", "테스터", null, OAuthProvider.KAKAO, "kakao-1");
+        testMember = new Member("test@test.com", "encoded-password", "테스터", null);
         TestEntityHelper.setId(testMember, 1L);
     }
 

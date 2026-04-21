@@ -2,7 +2,6 @@ package com.inseong.dallyrun.backend.controller;
 
 import com.inseong.dallyrun.backend.config.SecurityConfig;
 import com.inseong.dallyrun.backend.dto.response.MemberResponse;
-import com.inseong.dallyrun.backend.entity.enums.OAuthProvider;
 import com.inseong.dallyrun.backend.security.CustomUserDetails;
 import com.inseong.dallyrun.backend.security.CustomUserDetailsService;
 import com.inseong.dallyrun.backend.security.JwtAuthenticationFilter;
@@ -44,7 +43,7 @@ class MemberControllerTest {
 
     @Test
     void getProfile_success() throws Exception {
-        MemberResponse response = new MemberResponse(1L, "test@test.com", "테스터", null, OAuthProvider.KAKAO);
+        MemberResponse response = new MemberResponse(1L, "test@test.com", "테스터", null);
         when(memberService.getProfile(1L)).thenReturn(response);
 
         mockMvc.perform(get("/api/members/me")
@@ -55,7 +54,7 @@ class MemberControllerTest {
 
     @Test
     void updateProfile_success() throws Exception {
-        MemberResponse response = new MemberResponse(1L, "test@test.com", "새닉", null, OAuthProvider.KAKAO);
+        MemberResponse response = new MemberResponse(1L, "test@test.com", "새닉", null);
         when(memberService.updateProfile(eq(1L), any())).thenReturn(response);
 
         mockMvc.perform(patch("/api/members/me")

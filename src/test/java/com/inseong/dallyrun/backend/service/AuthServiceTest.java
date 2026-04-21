@@ -1,24 +1,24 @@
 package com.inseong.dallyrun.backend.service;
 
+import com.inseong.dallyrun.backend.dto.request.LoginRequest;
+import com.inseong.dallyrun.backend.dto.request.SignupRequest;
 import com.inseong.dallyrun.backend.dto.response.TokenResponse;
 import com.inseong.dallyrun.backend.entity.Member;
-import com.inseong.dallyrun.backend.entity.enums.OAuthProvider;
 import com.inseong.dallyrun.backend.exception.BusinessException;
+import com.inseong.dallyrun.backend.exception.ErrorCode;
 import com.inseong.dallyrun.backend.repository.MemberRepository;
 import com.inseong.dallyrun.backend.security.JwtTokenProvider;
-import com.inseong.dallyrun.backend.service.oauth.OAuthClient;
-import com.inseong.dallyrun.backend.service.oauth.OAuthUserInfo;
+import com.inseong.dallyrun.backend.support.TestEntityHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import org.springframework.dao.DataIntegrityViolationException;
-
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,57 +37,88 @@ class AuthServiceTest {
     @Mock
     private ValueOperations<String, String> valueOperations;
     @Mock
-    private OAuthClient kakaoClient;
+    private PasswordEncoder passwordEncoder;
 
     private AuthServiceImpl authService;
 
     @BeforeEach
     void setUp() {
-        lenient().when(kakaoClient.getProvider()).thenReturn(OAuthProvider.KAKAO);
         lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         authService = new AuthServiceImpl(
-                List.of(kakaoClient), memberRepository, jwtTokenProvider, redisTemplate);
+                memberRepository, jwtTokenProvider, redisTemplate, passwordEncoder);
     }
 
     @Test
-    void oauthLogin_newUser_createsAndReturnsTokens() {
-        OAuthUserInfo userInfo = new OAuthUserInfo(
-                OAuthProvider.KAKAO, "kakao-123", "test@kakao.com", "테스터", null);
-        when(kakaoClient.getUserInfo("auth-code")).thenReturn(userInfo);
-        when(memberRepository.findByOauthProviderAndOauthProviderId(OAuthProvider.KAKAO, "kakao-123"))
-                .thenReturn(Optional.empty());
+    void signup_success_encodesPasswordAndIssuesTokens() {
+        SignupRequest request = new SignupRequest("test@test.com", "password123", "테스터");
+        when(memberRepository.existsByEmail("test@test.com")).thenReturn(false);
+        when(passwordEncoder.encode("password123")).thenReturn("hashed-password");
 
-        Member savedMember = new Member("test@kakao.com", "테스터", null, OAuthProvider.KAKAO, "kakao-123");
+        Member savedMember = new Member("test@test.com", "hashed-password", "테스터", null);
+        TestEntityHelper.setId(savedMember, 1L);
         when(memberRepository.save(any(Member.class))).thenReturn(savedMember);
-        when(jwtTokenProvider.createAccessToken(any())).thenReturn("access-token");
-        when(jwtTokenProvider.createRefreshToken(any())).thenReturn("refresh-token");
+        when(jwtTokenProvider.createAccessToken(1L)).thenReturn("access-token");
+        when(jwtTokenProvider.createRefreshToken(1L)).thenReturn("refresh-token");
         when(jwtTokenProvider.getRefreshTokenExpiry()).thenReturn(1209600000L);
 
-        TokenResponse response = authService.oauthLogin(OAuthProvider.KAKAO, "auth-code");
+        TokenResponse response = authService.signup(request);
 
-        assertNotNull(response);
         assertEquals("access-token", response.accessToken());
         assertEquals("refresh-token", response.refreshToken());
-        verify(memberRepository).save(any(Member.class));
+
+        ArgumentCaptor<Member> captor = ArgumentCaptor.forClass(Member.class);
+        verify(memberRepository).save(captor.capture());
+        // BCrypt 해시값이 저장되어야 함 (원본 비밀번호가 아닌)
+        assertEquals("hashed-password", captor.getValue().getPasswordHash());
+        assertEquals("test@test.com", captor.getValue().getEmail());
     }
 
     @Test
-    void oauthLogin_existingUser_returnsTokens() {
-        OAuthUserInfo userInfo = new OAuthUserInfo(
-                OAuthProvider.KAKAO, "kakao-123", "test@kakao.com", "테스터", null);
-        when(kakaoClient.getUserInfo("auth-code")).thenReturn(userInfo);
+    void signup_duplicateEmail_throwsEmailAlreadyExists() {
+        SignupRequest request = new SignupRequest("dup@test.com", "password123", "중복");
+        when(memberRepository.existsByEmail("dup@test.com")).thenReturn(true);
 
-        Member existingMember = new Member("test@kakao.com", "테스터", null, OAuthProvider.KAKAO, "kakao-123");
-        when(memberRepository.findByOauthProviderAndOauthProviderId(OAuthProvider.KAKAO, "kakao-123"))
-                .thenReturn(Optional.of(existingMember));
-        when(jwtTokenProvider.createAccessToken(any())).thenReturn("access-token");
-        when(jwtTokenProvider.createRefreshToken(any())).thenReturn("refresh-token");
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> authService.signup(request));
+        assertEquals(ErrorCode.EMAIL_ALREADY_EXISTS, ex.getErrorCode());
+        verify(memberRepository, never()).save(any());
+    }
+
+    @Test
+    void login_success_returnsTokens() {
+        Member member = new Member("test@test.com", "hashed-password", "테스터", null);
+        TestEntityHelper.setId(member, 1L);
+        when(memberRepository.findByEmail("test@test.com")).thenReturn(Optional.of(member));
+        when(passwordEncoder.matches("password123", "hashed-password")).thenReturn(true);
+        when(jwtTokenProvider.createAccessToken(1L)).thenReturn("access-token");
+        when(jwtTokenProvider.createRefreshToken(1L)).thenReturn("refresh-token");
         when(jwtTokenProvider.getRefreshTokenExpiry()).thenReturn(1209600000L);
 
-        TokenResponse response = authService.oauthLogin(OAuthProvider.KAKAO, "auth-code");
+        TokenResponse response = authService.login(new LoginRequest("test@test.com", "password123"));
 
-        assertNotNull(response);
-        verify(memberRepository, never()).save(any());
+        assertEquals("access-token", response.accessToken());
+        assertEquals("refresh-token", response.refreshToken());
+    }
+
+    @Test
+    void login_userNotFound_throwsInvalidCredentials() {
+        when(memberRepository.findByEmail("none@test.com")).thenReturn(Optional.empty());
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> authService.login(new LoginRequest("none@test.com", "password123")));
+        assertEquals(ErrorCode.INVALID_CREDENTIALS, ex.getErrorCode());
+    }
+
+    @Test
+    void login_wrongPassword_throwsInvalidCredentials() {
+        Member member = new Member("test@test.com", "hashed-password", "테스터", null);
+        TestEntityHelper.setId(member, 1L);
+        when(memberRepository.findByEmail("test@test.com")).thenReturn(Optional.of(member));
+        when(passwordEncoder.matches("wrong", "hashed-password")).thenReturn(false);
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> authService.login(new LoginRequest("test@test.com", "wrong")));
+        assertEquals(ErrorCode.INVALID_CREDENTIALS, ex.getErrorCode());
     }
 
     @Test
@@ -126,26 +157,5 @@ class AuthServiceTest {
         authService.logout(1L);
 
         verify(redisTemplate).delete("refresh:1");
-    }
-
-    @Test
-    void oauthLogin_raceCondition_retriesFind() {
-        OAuthUserInfo userInfo = new OAuthUserInfo(
-                OAuthProvider.KAKAO, "kakao-456", "race@kakao.com", "레이서", null);
-        when(kakaoClient.getUserInfo("auth-code")).thenReturn(userInfo);
-        when(memberRepository.findByOauthProviderAndOauthProviderId(OAuthProvider.KAKAO, "kakao-456"))
-                .thenReturn(Optional.empty())
-                .thenReturn(Optional.of(new Member("race@kakao.com", "레이서", null, OAuthProvider.KAKAO, "kakao-456")));
-        when(memberRepository.save(any(Member.class)))
-                .thenThrow(new DataIntegrityViolationException("duplicate key"));
-        when(jwtTokenProvider.createAccessToken(any())).thenReturn("access-token");
-        when(jwtTokenProvider.createRefreshToken(any())).thenReturn("refresh-token");
-        when(jwtTokenProvider.getRefreshTokenExpiry()).thenReturn(1209600000L);
-
-        TokenResponse response = authService.oauthLogin(OAuthProvider.KAKAO, "auth-code");
-
-        assertNotNull(response);
-        verify(memberRepository, times(2))
-                .findByOauthProviderAndOauthProviderId(OAuthProvider.KAKAO, "kakao-456");
     }
 }

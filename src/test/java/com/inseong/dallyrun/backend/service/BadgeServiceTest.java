@@ -2,7 +2,6 @@ package com.inseong.dallyrun.backend.service;
 
 import com.inseong.dallyrun.backend.entity.*;
 import com.inseong.dallyrun.backend.entity.enums.ConditionType;
-import com.inseong.dallyrun.backend.entity.enums.OAuthProvider;
 import com.inseong.dallyrun.backend.repository.BadgeRepository;
 import com.inseong.dallyrun.backend.repository.MemberBadgeRepository;
 import com.inseong.dallyrun.backend.repository.MemberRepository;
@@ -44,7 +43,7 @@ class BadgeServiceTest {
 
     @BeforeEach
     void setUp() {
-        testMember = new Member("test@test.com", "테스터", null, OAuthProvider.KAKAO, "kakao-1");
+        testMember = new Member("test@test.com", "encoded-password", "테스터", null);
     }
 
     @Test

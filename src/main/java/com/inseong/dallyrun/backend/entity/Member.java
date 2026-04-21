@@ -1,16 +1,16 @@
 package com.inseong.dallyrun.backend.entity;
 
-import com.inseong.dallyrun.backend.entity.enums.OAuthProvider;
 import jakarta.persistence.*;
 
 /**
  * 회원 엔티티.
- * OAuth 소셜 로그인으로만 가입하며, provider+providerId 조합으로 고유 식별한다.
+ * 이메일/비밀번호로 가입하며, 이메일이 고유 식별자 역할을 한다.
+ * 비밀번호는 BCrypt로 해시된 값만 저장한다.
  * RunningSession, Goal, MemberBadge와 1:N 관계를 갖는다.
  */
 @Entity
 @Table(name = "member", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"oauth_provider", "oauth_provider_id"})
+        @UniqueConstraint(columnNames = "email")
 })
 public class Member extends BaseTimeEntity {
 
@@ -21,29 +21,23 @@ public class Member extends BaseTimeEntity {
     @Column(nullable = false, length = 255)
     private String email;
 
+    @Column(name = "password_hash", nullable = false, length = 255)
+    private String passwordHash;
+
     @Column(nullable = false, length = 50)
     private String nickname;
 
     @Column(length = 500)
     private String profileImageUrl;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "oauth_provider", nullable = false)
-    private OAuthProvider oauthProvider;
-
-    @Column(name = "oauth_provider_id", nullable = false, length = 255)
-    private String oauthProviderId;
-
     protected Member() {
     }
 
-    public Member(String email, String nickname, String profileImageUrl,
-                  OAuthProvider oauthProvider, String oauthProviderId) {
+    public Member(String email, String passwordHash, String nickname, String profileImageUrl) {
         this.email = email;
+        this.passwordHash = passwordHash;
         this.nickname = nickname;
         this.profileImageUrl = profileImageUrl;
-        this.oauthProvider = oauthProvider;
-        this.oauthProviderId = oauthProviderId;
     }
 
     public Long getId() {
@@ -54,20 +48,16 @@ public class Member extends BaseTimeEntity {
         return email;
     }
 
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
     public String getNickname() {
         return nickname;
     }
 
     public String getProfileImageUrl() {
         return profileImageUrl;
-    }
-
-    public OAuthProvider getOauthProvider() {
-        return oauthProvider;
-    }
-
-    public String getOauthProviderId() {
-        return oauthProviderId;
     }
 
     public void updateProfile(String nickname, String profileImageUrl) {

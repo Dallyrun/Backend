@@ -2,7 +2,6 @@ package com.inseong.dallyrun.backend.controller;
 
 import com.inseong.dallyrun.backend.config.SecurityConfig;
 import com.inseong.dallyrun.backend.dto.response.TokenResponse;
-import com.inseong.dallyrun.backend.entity.enums.OAuthProvider;
 import com.inseong.dallyrun.backend.security.CustomUserDetailsService;
 import com.inseong.dallyrun.backend.security.JwtAuthenticationFilter;
 import com.inseong.dallyrun.backend.security.JwtTokenProvider;
@@ -15,8 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -39,17 +37,68 @@ class AuthControllerTest {
     private CustomUserDetailsService customUserDetailsService;
 
     @Test
-    void kakaoLogin_success() throws Exception {
+    void signup_success() throws Exception {
         TokenResponse tokenResponse = new TokenResponse("access-token", "refresh-token");
-        when(authService.oauthLogin(eq(OAuthProvider.KAKAO), anyString()))
-                .thenReturn(tokenResponse);
+        when(authService.signup(any())).thenReturn(tokenResponse);
 
-        mockMvc.perform(post("/api/auth/oauth/kakao")
+        mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"authCode\":\"test-auth-code\"}"))
-                .andExpect(status().isOk())
+                        .content("{\"email\":\"new@test.com\",\"password\":\"password123\",\"nickname\":\"신규\"}"))
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.accessToken").value("access-token"))
                 .andExpect(jsonPath("$.data.refreshToken").value("refresh-token"));
+    }
+
+    @Test
+    void signup_invalidEmail_returns400() throws Exception {
+        mockMvc.perform(post("/api/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"not-an-email\",\"password\":\"password123\",\"nickname\":\"신규\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void signup_shortPassword_returns400() throws Exception {
+        mockMvc.perform(post("/api/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"new@test.com\",\"password\":\"short\",\"nickname\":\"신규\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void signup_missingNickname_returns400() throws Exception {
+        mockMvc.perform(post("/api/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"new@test.com\",\"password\":\"password123\",\"nickname\":\"\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void login_success() throws Exception {
+        TokenResponse tokenResponse = new TokenResponse("access-token", "refresh-token");
+        when(authService.login(any())).thenReturn(tokenResponse);
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"test@test.com\",\"password\":\"password123\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.accessToken").value("access-token"));
+    }
+
+    @Test
+    void login_invalidEmail_returns400() throws Exception {
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"not-an-email\",\"password\":\"password123\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void login_missingPassword_returns400() throws Exception {
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"test@test.com\",\"password\":\"\"}"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -62,13 +111,5 @@ class AuthControllerTest {
                         .content("{\"refreshToken\":\"old-refresh\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.accessToken").value("new-access"));
-    }
-
-    @Test
-    void kakaoLogin_missingAuthCode_returns400() throws Exception {
-        mockMvc.perform(post("/api/auth/oauth/kakao")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"authCode\":\"\"}"))
-                .andExpect(status().isBadRequest());
     }
 }

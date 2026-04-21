@@ -8,7 +8,6 @@ import com.inseong.dallyrun.backend.entity.Goal;
 import com.inseong.dallyrun.backend.entity.Member;
 import com.inseong.dallyrun.backend.entity.enums.GoalType;
 import com.inseong.dallyrun.backend.entity.enums.MetricType;
-import com.inseong.dallyrun.backend.entity.enums.OAuthProvider;
 import com.inseong.dallyrun.backend.exception.BusinessException;
 import com.inseong.dallyrun.backend.repository.GoalRepository;
 import com.inseong.dallyrun.backend.repository.MemberRepository;
@@ -47,7 +46,7 @@ class GoalServiceTest {
 
     @BeforeEach
     void setUp() {
-        testMember = new Member("test@test.com", "테스터", null, OAuthProvider.KAKAO, "kakao-1");
+        testMember = new Member("test@test.com", "encoded-password", "테스터", null);
         TestEntityHelper.setId(testMember, 1L);
     }
 
