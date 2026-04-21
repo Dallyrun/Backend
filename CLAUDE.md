@@ -24,7 +24,6 @@ Dallyrun Backend — 런닝 트래킹 앱을 위한 백엔드 서버. Spring Boo
 - **Base package**: `com.inseong.dallyrun.backend`
 - `controller/` — REST API 엔드포인트
 - `service/` — 비즈니스 로직
-- `service/oauth/` — OAuth 클라이언트 (OAuthClient, KakaoOAuthClient)
 - `repository/` — JPA 데이터 접근 계층
 - `entity/` — JPA 엔티티 클래스
 - `dto/` — 요청/응답 데이터 전송 객체
@@ -38,7 +37,7 @@ Dallyrun Backend — 런닝 트래킹 앱을 위한 백엔드 서버. Spring Boo
 - **DB**: PostgreSQL (JPA/Hibernate, HikariCP 커넥션 풀)
 - **Cache/Session**: Redis (Refresh token, 공유 링크 TTL)
 - **Security**: Spring Security 기반 JWT Stateless 인증. `/api/auth/**`와 공유 링크 조회는 인증 불필요
-- **OAuth2**: Kakao 소셜 로그인 지원
+- **Auth**: 이메일/비밀번호 회원가입·로그인 (BCrypt 해시)
 - **API 문서**: SpringDoc OpenAPI 3 (Swagger UI)
 - **Prod 프로파일**: `application-prod.yaml` — `ddl-auto: validate`, `sql.init.mode: never`
 

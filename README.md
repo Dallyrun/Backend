@@ -51,7 +51,7 @@ cp .env.example .env
 
 ## 주요 기능
 
-- **Auth** — 회원가입/로그인, JWT 토큰 발급/갱신, OAuth2 소셜 로그인 (Kakao)
+- **Auth** — 이메일/비밀번호 회원가입·로그인, JWT 토큰 발급/갱신
 - **Member** — 회원 프로필 조회/수정
 - **Running Session** — GPS 기반 러닝 기록 생성/조회/삭제, 통계
 - **Goal** — 러닝 목표 설정/관리, 달성률 추적
@@ -70,6 +70,5 @@ src/main/java/com/inseong/dallyrun/backend/
 ├── repository/    # JPA 데이터 접근 계층
 ├── security/      # JWT 인증/인가 (JwtTokenProvider, JwtAuthenticationFilter 등)
 ├── service/       # 비즈니스 로직
-│   └── oauth/     # OAuth 클라이언트 (Kakao)
 └── util/          # 유틸리티 (GeoUtils, DateUtils)
 ```
