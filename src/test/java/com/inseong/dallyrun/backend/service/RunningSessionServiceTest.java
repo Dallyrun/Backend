@@ -6,7 +6,6 @@ import com.inseong.dallyrun.backend.dto.response.RunningSessionResponse;
 import com.inseong.dallyrun.backend.dto.response.RunningSessionStartResponse;
 import com.inseong.dallyrun.backend.entity.Member;
 import com.inseong.dallyrun.backend.entity.RunningSession;
-import com.inseong.dallyrun.backend.entity.enums.OAuthProvider;
 import com.inseong.dallyrun.backend.entity.enums.SessionStatus;
 import com.inseong.dallyrun.backend.exception.BusinessException;
 import com.inseong.dallyrun.backend.repository.GpsPointRepository;
@@ -48,7 +47,7 @@ class RunningSessionServiceTest {
 
     @BeforeEach
     void setUp() {
-        testMember = new Member("test@test.com", "테스터", null, OAuthProvider.KAKAO, "kakao-1");
+        testMember = new Member("test@test.com", "encoded-password", "테스터", null);
         TestEntityHelper.setId(testMember, 1L);
     }
 

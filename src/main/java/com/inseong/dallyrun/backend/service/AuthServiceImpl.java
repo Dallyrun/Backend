@@ -1,25 +1,19 @@
 package com.inseong.dallyrun.backend.service;
 
+import com.inseong.dallyrun.backend.dto.request.LoginRequest;
+import com.inseong.dallyrun.backend.dto.request.SignupRequest;
 import com.inseong.dallyrun.backend.dto.response.TokenResponse;
 import com.inseong.dallyrun.backend.entity.Member;
-import com.inseong.dallyrun.backend.entity.enums.OAuthProvider;
 import com.inseong.dallyrun.backend.exception.BusinessException;
 import com.inseong.dallyrun.backend.exception.ErrorCode;
 import com.inseong.dallyrun.backend.repository.MemberRepository;
 import com.inseong.dallyrun.backend.security.JwtTokenProvider;
-import com.inseong.dallyrun.backend.service.oauth.OAuthClient;
-import com.inseong.dallyrun.backend.service.oauth.OAuthUserInfo;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import org.springframework.dao.DataIntegrityViolationException;
-
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -27,48 +21,58 @@ public class AuthServiceImpl implements AuthService {
 
     private static final String REFRESH_TOKEN_PREFIX = "refresh:";
 
-    private final Map<OAuthProvider, OAuthClient> oauthClients;
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final StringRedisTemplate redisTemplate;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthServiceImpl(List<OAuthClient> oauthClients,
-                           MemberRepository memberRepository,
+    public AuthServiceImpl(MemberRepository memberRepository,
                            JwtTokenProvider jwtTokenProvider,
-                           StringRedisTemplate redisTemplate) {
-        this.oauthClients = oauthClients.stream()
-                .collect(Collectors.toMap(OAuthClient::getProvider, Function.identity()));
+                           StringRedisTemplate redisTemplate,
+                           PasswordEncoder passwordEncoder) {
         this.memberRepository = memberRepository;
         this.jwtTokenProvider = jwtTokenProvider;
         this.redisTemplate = redisTemplate;
+        this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * 이메일/비밀번호 회원가입.
+     *
+     * <p>이메일 중복 시 EMAIL_ALREADY_EXISTS. 비밀번호는 BCrypt로 해시하여 저장한다.
+     * 가입 성공 시 즉시 JWT access/refresh 토큰을 발급하여 로그인 상태로 응답한다.
+     */
     @Override
-    public TokenResponse oauthLogin(OAuthProvider provider, String authCode) {
-        OAuthClient client = oauthClients.get(provider);
-        if (client == null) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT);
+    public TokenResponse signup(SignupRequest request) {
+        if (memberRepository.existsByEmail(request.email())) {
+            throw new BusinessException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
-        OAuthUserInfo userInfo = client.getUserInfo(authCode);
+        String passwordHash = passwordEncoder.encode(request.password());
+        Member member = memberRepository.save(new Member(
+                request.email(),
+                passwordHash,
+                request.nickname(),
+                null
+        ));
 
-        Member member = memberRepository
-                .findByOauthProviderAndOauthProviderId(provider, userInfo.providerId())
-                .orElseGet(() -> {
-                    try {
-                        return memberRepository.save(new Member(
-                                userInfo.email(),
-                                userInfo.nickname(),
-                                userInfo.profileImageUrl(),
-                                userInfo.provider(),
-                                userInfo.providerId()
-                        ));
-                    } catch (DataIntegrityViolationException e) {
-                        return memberRepository
-                                .findByOauthProviderAndOauthProviderId(provider, userInfo.providerId())
-                                .orElseThrow(() -> new BusinessException(ErrorCode.INTERNAL_ERROR));
-                    }
-                });
+        return issueTokens(member.getId());
+    }
+
+    /**
+     * 이메일/비밀번호 로그인.
+     *
+     * <p>회원 존재 여부와 비밀번호 일치 여부를 구분하지 않고 동일한 INVALID_CREDENTIALS 응답을
+     * 반환하여 사용자 열거(enumeration) 공격을 방지한다.
+     */
+    @Override
+    public TokenResponse login(LoginRequest request) {
+        Member member = memberRepository.findByEmail(request.email())
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_CREDENTIALS));
+
+        if (!passwordEncoder.matches(request.password(), member.getPasswordHash())) {
+            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
+        }
 
         return issueTokens(member.getId());
     }

@@ -3,7 +3,6 @@ package com.inseong.dallyrun.backend.service;
 import com.inseong.dallyrun.backend.dto.request.MemberUpdateRequest;
 import com.inseong.dallyrun.backend.dto.response.MemberResponse;
 import com.inseong.dallyrun.backend.entity.Member;
-import com.inseong.dallyrun.backend.entity.enums.OAuthProvider;
 import com.inseong.dallyrun.backend.exception.BusinessException;
 import com.inseong.dallyrun.backend.repository.MemberRepository;
 import com.inseong.dallyrun.backend.support.TestEntityHelper;
@@ -32,7 +31,7 @@ class MemberServiceTest {
 
     @BeforeEach
     void setUp() {
-        testMember = new Member("test@test.com", "테스터", null, OAuthProvider.KAKAO, "kakao-1");
+        testMember = new Member("test@test.com", "encoded-password", "테스터", null);
         TestEntityHelper.setId(testMember, 1L);
     }
 

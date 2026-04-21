@@ -23,9 +23,3 @@ jwt:
   secret: test-secret-key-that-is-at-least-256-bits-long-for-hmac-sha-testing
   access-token-expiry: 1800000
   refresh-token-expiry: 1209600000
-
-oauth:
-  kakao:
-    client-id: test-kakao-client-id
-    client-secret: test-kakao-client-secret
-    redirect-uri: http://localhost/oauth/kakao

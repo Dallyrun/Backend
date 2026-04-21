@@ -1,21 +1,22 @@
 package com.inseong.dallyrun.backend.controller;
 
-import com.inseong.dallyrun.backend.dto.request.OAuthLoginRequest;
+import com.inseong.dallyrun.backend.dto.request.LoginRequest;
 import com.inseong.dallyrun.backend.dto.request.RefreshTokenRequest;
+import com.inseong.dallyrun.backend.dto.request.SignupRequest;
 import com.inseong.dallyrun.backend.dto.response.ApiResponse;
 import com.inseong.dallyrun.backend.dto.response.TokenResponse;
-import com.inseong.dallyrun.backend.entity.enums.OAuthProvider;
 import com.inseong.dallyrun.backend.security.CustomUserDetails;
 import com.inseong.dallyrun.backend.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Auth", description = "인증 API — OAuth2 소셜 로그인, 토큰 갱신, 로그아웃. 로그인/갱신은 인증 불필요.")
+@Tag(name = "Auth", description = "인증 API — 이메일/비밀번호 회원가입·로그인, 토큰 갱신, 로그아웃. 가입/로그인/갱신은 인증 불필요.")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -27,19 +28,35 @@ public class AuthController {
     }
 
     @Operation(
-            summary = "카카오 로그인",
-            description = "앱에서 카카오 SDK로 받은 인증 코드(authCode)를 전달하면, "
-                    + "백엔드가 카카오 서버에서 유저 정보를 조회하여 회원 가입/로그인 처리 후 JWT를 발급합니다. "
-                    + "신규 유저는 자동으로 회원 생성됩니다."
+            summary = "회원가입",
+            description = "이메일·비밀번호·닉네임으로 신규 회원을 생성하고 즉시 JWT 토큰을 발급합니다. "
+                    + "비밀번호는 BCrypt로 해시되어 저장되며, 이메일이 이미 존재하면 409를 반환합니다."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "가입 성공, JWT 토큰 반환"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 입력"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이미 사용 중인 이메일")
+    })
+    @PostMapping("/signup")
+    public ResponseEntity<ApiResponse<TokenResponse>> signup(
+            @Valid @RequestBody SignupRequest request) {
+        TokenResponse response = authService.signup(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(response));
+    }
+
+    @Operation(
+            summary = "로그인",
+            description = "이메일·비밀번호로 인증 후 JWT 토큰을 발급받습니다. "
+                    + "회원이 없거나 비밀번호가 틀리면 동일하게 401을 반환합니다 (사용자 열거 방지)."
     )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그인 성공, JWT 토큰 반환"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 인증 코드")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "이메일 또는 비밀번호 불일치")
     })
-    @PostMapping("/oauth/kakao")
-    public ResponseEntity<ApiResponse<TokenResponse>> kakaoLogin(
-            @Valid @RequestBody OAuthLoginRequest request) {
-        TokenResponse response = authService.oauthLogin(OAuthProvider.KAKAO, request.authCode());
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<TokenResponse>> login(
+            @Valid @RequestBody LoginRequest request) {
+        TokenResponse response = authService.login(request);
         return ResponseEntity.ok(ApiResponse.of(response));
     }
 
