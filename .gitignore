@@ -53,7 +53,8 @@ replay_pid*
 ### OS ###
 .DS_Store
 
-.claude/
+.claude/settings.local.json
+.claude/*.local.json
 
 # Local environment files (do not commit actual values)
 .env
