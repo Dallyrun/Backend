@@ -1,3 +1,8 @@
+---
+description: GitHub 이슈를 읽고 feature 브랜치에서 구현·커밋·푸시·PR까지 진행합니다
+argument-hint: "<이슈번호 | 이슈 URL>"
+---
+
 # /fix-issue — GitHub 이슈 해결 명령어
 
 GitHub 이슈를 해결하고 PR을 생성합니다.
@@ -37,13 +42,12 @@ GitHub 이슈를 해결하고 PR을 생성합니다.
    - 버그 수정: `fix/이슈-짧은-설명`
    - 리팩토링: `refactor/이슈-짧은-설명`
    - 문서: `docs/이슈-짧은-설명`
-5. `CLAUDE.md`의 작업 순서와 `.claude/hooks/architecture-check.md` 계층 규칙을 따라 구현합니다.
+5. `CLAUDE.md` 의 MVC 계층 책임에 맞춰 구현합니다.
 6. `/quality` 로 빌드·테스트가 통과하는지 확인합니다.
 7. 변경사항을 커밋합니다.
    - **Conventional Commits** 형식 (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`, `ci:`)
    - 커밋 본문에 `Closes #{이슈번호}` 를 포함하여 PR 머지 시 이슈 자동 종료
-   - 구조 변경과 행동 변경은 별도 커밋 (`.claude/rules/tidy-first-commit.md`)
-8. 브랜치를 push하고 PR을 생성합니다 (`.claude/skills/create-pr/skill.md` 참조).
+8. 브랜치를 push하고 PR을 생성합니다 (`create-pr` 스킬 사용).
 9. 1단계에서 stash한 내용이 있으면 원래 브랜치로 돌아가 `git stash pop` 으로 복원합니다.
    - 충돌 발생 시 `git stash list` 로 확인 후 수동 해결 안내
 

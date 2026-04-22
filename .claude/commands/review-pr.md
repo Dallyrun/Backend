@@ -1,3 +1,8 @@
+---
+description: PR의 변경사항을 분석하고 인라인 코드 리뷰를 작성합니다
+argument-hint: "[PR번호] [comment|approve|request-changes]"
+---
+
 # /review-pr — PR 코드 리뷰 명령어
 
 PR의 변경사항을 분석하고 인라인 코드 리뷰를 작성합니다.
@@ -153,14 +158,6 @@ gh pr review {PR번호} --approve --body "LGTM"
 # 변경 요청
 gh pr review {PR번호} --request-changes --body "위 코멘트 반영 후 다시 요청 부탁드립니다."
 ```
-
-## 참고 규칙
-
-| 항목 | 참조 |
-|------|------|
-| API 설계 | `.claude/rules/api-design.md` |
-| 아키텍처 계층 | `.claude/hooks/architecture-check.md` |
-| 커밋 분리 원칙 | `.claude/rules/tidy-first-commit.md` |
 
 ## 출력 형식
 

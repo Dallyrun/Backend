@@ -1,6 +1,6 @@
 ---
 name: create-pr
-description: Dallyrun Backend 규칙에 맞춰 GitHub Pull Request를 생성하는 스킬
+description: Dallyrun Backend 의 Conventional Commits 규칙과 PR 템플릿에 맞춰 gh CLI 로 Pull Request 를 생성합니다. PR 생성, `gh pr create`, 이슈 해결 후 PR 단계에서 사용합니다.
 ---
 
 # GitHub PR 생성 Skill
@@ -106,7 +106,7 @@ EOF
 - [ ] 커밋 메시지에 Claude/AI 언급 없음
 - [ ] PR 본문에 Claude/AI 언급 없음 (`Co-Authored-By` 포함)
 - [ ] 연관 이슈가 있다면 `Closes #N` 포함
-- [ ] 구조 변경과 행동 변경이 혼합되어 있지 않음 (`.claude/rules/tidy-first-commit.md`)
+- [ ] 한 커밋에 여러 의도가 섞이지 않음 (리팩토링 + 기능 추가 혼합 금지)
 
 ## 생성 후
 
