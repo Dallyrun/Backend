@@ -36,8 +36,18 @@ spring:
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
 server:
   port: 8080
+
+storage:
+  local:
+    path: ${STORAGE_LOCAL_PATH:./uploads}
+  base-url: ${STORAGE_BASE_URL:http://localhost:8080}
 
 jwt:
   secret: ${JWT_SECRET}

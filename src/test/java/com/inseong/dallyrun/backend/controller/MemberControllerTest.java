@@ -15,6 +15,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import org.springframework.mock.web.MockMultipartFile;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -89,5 +91,32 @@ class MemberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"nickname\":\"" + longNickname + "\"}"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void uploadProfileImage_success() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "avatar.jpg", "image/jpeg", new byte[]{1, 2, 3});
+        MemberResponse response = new MemberResponse(
+                1L, "test@test.com", "테스터",
+                "http://localhost:8080/uploads/profile-images/new.jpg");
+        when(memberService.uploadProfileImage(eq(1L), any())).thenReturn(response);
+
+        mockMvc.perform(multipart("/api/members/me/profile-image")
+                        .file(file)
+                        .with(user(testUser)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.profileImageUrl")
+                        .value("http://localhost:8080/uploads/profile-images/new.jpg"));
+    }
+
+    @Test
+    void uploadProfileImage_noAuth_returns401() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "avatar.jpg", "image/jpeg", new byte[]{1});
+
+        mockMvc.perform(multipart("/api/members/me/profile-image")
+                        .file(file))
+                .andExpect(status().isUnauthorized());
     }
 }

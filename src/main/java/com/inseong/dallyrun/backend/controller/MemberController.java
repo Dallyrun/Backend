@@ -7,10 +7,12 @@ import com.inseong.dallyrun.backend.security.CustomUserDetails;
 import com.inseong.dallyrun.backend.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Member", description = "회원 API — 프로필 조회/수정, 계정 삭제")
 @RestController
@@ -45,6 +47,19 @@ public class MemberController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody MemberUpdateRequest request) {
         MemberResponse response = memberService.updateProfile(userDetails.getMemberId(), request);
+        return ResponseEntity.ok(ApiResponse.of(response));
+    }
+
+    @Operation(
+            summary = "프로필 이미지 업로드",
+            description = "프로필 이미지를 업로드하여 교체합니다. multipart/form-data 의 `file` 파트로 전송하며, "
+                    + "허용 MIME은 image/jpeg, image/png, image/webp 입니다. 최대 크기는 5MB."
+    )
+    @PostMapping(value = "/me/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<MemberResponse>> uploadProfileImage(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestPart("file") MultipartFile file) {
+        MemberResponse response = memberService.uploadProfileImage(userDetails.getMemberId(), file);
         return ResponseEntity.ok(ApiResponse.of(response));
     }
 

@@ -36,8 +36,9 @@ Dallyrun Backend — 런닝 트래킹 앱을 위한 백엔드 서버. Spring Boo
 
 - **DB**: PostgreSQL (JPA/Hibernate, HikariCP 커넥션 풀)
 - **Cache/Session**: Redis (Refresh token, 공유 링크 TTL)
-- **Security**: Spring Security 기반 JWT Stateless 인증. `/api/auth/**`와 공유 링크 조회는 인증 불필요
+- **Security**: Spring Security 기반 JWT Stateless 인증. `/api/auth/**`, `/uploads/**`, 공유 링크 조회는 인증 불필요
 - **Auth**: 이메일/비밀번호 회원가입·로그인 (BCrypt 해시)
+- **File Storage**: `storage/FileStorage` 인터페이스 + `LocalFileStorage` 구현 (개발용 로컬 디스크). 저장 루트/베이스 URL은 `storage.local.path` / `storage.base-url` 로 설정. `/uploads/**` 정적 서빙. 추후 S3 등으로 교체 시 인터페이스 구현만 교체.
 - **API 문서**: SpringDoc OpenAPI 3 (Swagger UI)
 - **Prod 프로파일**: `application-prod.yaml` — `ddl-auto: validate`, `sql.init.mode: never`
 
