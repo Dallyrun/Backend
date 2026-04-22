@@ -5,15 +5,21 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.nio.file.Path;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
     private final String[] allowedOrigins;
+    private final Path uploadRoot;
 
-    public WebConfig(@Value("${cors.allowed-origins}") String allowedOrigins) {
+    public WebConfig(@Value("${cors.allowed-origins}") String allowedOrigins,
+                     @Value("${storage.local.path}") String uploadLocalPath) {
         this.allowedOrigins = allowedOrigins.split(",");
+        this.uploadRoot = Path.of(uploadLocalPath).toAbsolutePath().normalize();
     }
 
     @Bean
@@ -35,5 +41,16 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedHeaders("*")
                 .allowCredentials(true)
                 .maxAge(3600);
+    }
+
+    /**
+     * 로컬 스토리지에 저장된 업로드 파일을 정적으로 서빙한다.
+     * {@code /uploads/**} 요청은 {@code storage.local.path} 디렉토리에서 파일을 찾아 응답한다.
+     * 추후 S3 등 외부 스토리지로 교체되면 이 핸들러는 제거된다.
+     */
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:" + uploadRoot + "/");
     }
 }

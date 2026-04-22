@@ -27,6 +27,11 @@ public enum ErrorCode {
     // Share — 공유 링크 관련 오류
     SHARE_NOT_FOUND(HttpStatus.NOT_FOUND, "공유 링크를 찾을 수 없습니다."),
 
+    // File — 파일 업로드/스토리지 관련 오류
+    INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 파일 형식입니다."),
+    FILE_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE, "파일 크기가 허용된 범위를 초과했습니다."),
+    FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다."),
+
     // Common — 공통 오류
     INVALID_INPUT(HttpStatus.BAD_REQUEST, "잘못된 입력입니다."),
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),

@@ -198,6 +198,24 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 }
 ```
 
+### `POST /api/members/me/profile-image`
+
+프로필 이미지 업로드. `multipart/form-data` 로 전송하며, 업로드 성공 시 저장된 이미지 URL이 반영된 프로필을 반환합니다. 이전 이미지가 있으면 자동으로 삭제됩니다.
+
+**Request** (`multipart/form-data`)
+- `file` — 이미지 파일 (필수)
+  - 허용 MIME: `image/jpeg`, `image/png`, `image/webp`
+  - 최대 크기: 5MB
+
+**Response** — `GET /api/members/me` 와 동일한 `MemberResponse`
+
+| 에러 | 상태 |
+|------|------|
+| `INVALID_FILE_TYPE` | 400 — 허용되지 않은 MIME |
+| `FILE_TOO_LARGE` | 413 — 5MB 초과 |
+| `INVALID_INPUT` | 400 — 빈 파일 |
+| `MEMBER_NOT_FOUND` | 404 |
+
 ### `DELETE /api/members/me`
 
 계정 삭제 (탈퇴).
@@ -590,6 +608,7 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 | HTTP | 코드 | 메시지 |
 |------|------|--------|
 | 400 | INVALID_INPUT | 잘못된 입력입니다. |
+| 400 | INVALID_FILE_TYPE | 지원하지 않는 파일 형식입니다. |
 | 401 | INVALID_TOKEN | 유효하지 않은 토큰입니다. |
 | 401 | INVALID_CREDENTIALS | 이메일 또는 비밀번호가 일치하지 않습니다. |
 | 403 | ACCESS_DENIED | 접근 권한이 없습니다. |
@@ -600,6 +619,8 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 | 409 | EMAIL_ALREADY_EXISTS | 이미 사용 중인 이메일입니다. |
 | 409 | RUNNING_SESSION_ALREADY_ACTIVE | 이미 진행 중인 러닝 세션이 있습니다. |
 | 409 | RUNNING_SESSION_ALREADY_COMPLETED | 이미 종료된 러닝 세션입니다. |
+| 413 | FILE_TOO_LARGE | 파일 크기가 허용된 범위를 초과했습니다. |
+| 500 | FILE_UPLOAD_FAILED | 파일 업로드에 실패했습니다. |
 | 500 | INTERNAL_ERROR | 서버 내부 오류가 발생했습니다. |
 
 ---

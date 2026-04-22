@@ -60,3 +60,6 @@ replay_pid*
 .env
 .env.local
 .env.*.local
+
+# Uploaded files (로컬 스토리지 기본 경로)
+/uploads/
