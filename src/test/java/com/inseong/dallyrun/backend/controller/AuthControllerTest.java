@@ -83,6 +83,14 @@ class AuthControllerTest {
     }
 
     @Test
+    void signup_passwordWithNonAscii_returns400() throws Exception {
+        mockMvc.perform(post("/api/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"new@test.com\",\"password\":\"Password1!가\",\"nickname\":\"신규\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void signup_missingNickname_returns400() throws Exception {
         mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
