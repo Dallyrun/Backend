@@ -43,7 +43,7 @@ class AuthControllerTest {
 
         mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"new@test.com\",\"password\":\"password123\",\"nickname\":\"신규\"}"))
+                        .content("{\"email\":\"new@test.com\",\"password\":\"Password123!\",\"nickname\":\"신규\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.accessToken").value("access-token"))
                 .andExpect(jsonPath("$.data.refreshToken").value("refresh-token"));
@@ -53,7 +53,7 @@ class AuthControllerTest {
     void signup_invalidEmail_returns400() throws Exception {
         mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"not-an-email\",\"password\":\"password123\",\"nickname\":\"신규\"}"))
+                        .content("{\"email\":\"not-an-email\",\"password\":\"Password123!\",\"nickname\":\"신규\"}"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -66,10 +66,18 @@ class AuthControllerTest {
     }
 
     @Test
+    void signup_passwordMissingSpecialChar_returns400() throws Exception {
+        mockMvc.perform(post("/api/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"new@test.com\",\"password\":\"Password123\",\"nickname\":\"신규\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void signup_missingNickname_returns400() throws Exception {
         mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"new@test.com\",\"password\":\"password123\",\"nickname\":\"\"}"))
+                        .content("{\"email\":\"new@test.com\",\"password\":\"Password123!\",\"nickname\":\"\"}"))
                 .andExpect(status().isBadRequest());
     }
 

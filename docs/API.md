@@ -91,7 +91,7 @@ Authorization: Bearer {accessToken}
 ```json
 {
   "email": "user@example.com",
-  "password": "password123",
+  "password": "Password123!",
   "nickname": "달리기왕"
 }
 ```
@@ -99,7 +99,7 @@ Authorization: Bearer {accessToken}
 | 필드 | 제약 |
 |------|------|
 | `email` | 유효한 이메일 형식, 필수, 고유 |
-| `password` | 8자 이상 100자 이하, 필수 |
+| `password` | 8자 이상 100자 이하, 영문·숫자·특수기호 모두 포함, 필수 |
 | `nickname` | 50자 이하, 필수 |
 
 **Response** `201 Created`
