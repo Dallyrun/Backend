@@ -9,9 +9,13 @@ Dallyrun Backend — 런닝 트래킹 앱을 위한 백엔드 서버. Spring Boo
 ## Build & Run Commands
 
 ```bash
+# 로컬 인프라(Postgres + Redis) 기동
+docker compose up -d
+docker compose down      # 중지 (데이터 유지, -v 추가 시 볼륨 삭제)
+
 ./gradlew build          # 빌드
-./gradlew bootRun        # 실행
-./gradlew test           # 전체 테스트
+./gradlew bootRun        # 실행 (docker compose up -d 선행 필요)
+./gradlew test           # 전체 테스트 (H2 인메모리, 외부 환경 불필요)
 ./gradlew clean build    # 클린 빌드
 
 # 단일 테스트
@@ -34,8 +38,8 @@ Dallyrun Backend — 런닝 트래킹 앱을 위한 백엔드 서버. Spring Boo
 
 ## Infrastructure
 
-- **DB**: PostgreSQL (JPA/Hibernate, HikariCP 커넥션 풀)
-- **Cache/Session**: Redis (Refresh token, 공유 링크 TTL)
+- **DB**: PostgreSQL (JPA/Hibernate, HikariCP 커넥션 풀). 로컬은 루트 `docker-compose.yml` (`postgres:16-alpine`) 로 기동
+- **Cache/Session**: Redis (Refresh token, 공유 링크 TTL). 로컬은 루트 `docker-compose.yml` (`redis:7-alpine`) 로 기동
 - **Security**: Spring Security 기반 JWT Stateless 인증. `/api/auth/**`, `/uploads/**`, 공유 링크 조회는 인증 불필요
 - **Auth**: 이메일/비밀번호 회원가입·로그인 (BCrypt 해시)
 - **File Storage**: `storage/FileStorage` 인터페이스 + `LocalFileStorage` 구현 (개발용 로컬 디스크). 저장 루트/베이스 URL은 `storage.local.path` / `storage.base-url` 로 설정. `/uploads/**` 정적 서빙. 추후 S3 등으로 교체 시 인터페이스 구현만 교체.
@@ -45,6 +49,7 @@ Dallyrun Backend — 런닝 트래킹 앱을 위한 백엔드 서버. Spring Boo
 ## Configuration
 
 - 로컬 환경 설정은 루트의 `.env` 파일로 관리한다. `.env.example`을 복사하여 값을 채운다.
+- `docker-compose.yml` 은 루트 `.env` 를 자동으로 읽어 컨테이너(`DB_USERNAME`/`DB_PASSWORD`/`DB_NAME`/`DB_PORT`/`REDIS_PASSWORD`/`REDIS_PORT`)를 구성한다. 앱과 컨테이너가 동일한 소스를 공유한다.
 - 운영 환경은 GitHub Actions secrets로 주입한다.
 - 민감한 값(비밀번호, 시크릿, OAuth 크리덴셜)은 문서·커밋·이슈·PR 본문 등 git 기록에 절대 포함하지 않는다.
 
