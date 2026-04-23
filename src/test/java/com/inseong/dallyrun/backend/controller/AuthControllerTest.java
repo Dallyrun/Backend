@@ -74,6 +74,15 @@ class AuthControllerTest {
     }
 
     @Test
+    void signup_longPassword_returns400() throws Exception {
+        String tooLong = "Aa1!" + "a".repeat(28);
+        mockMvc.perform(post("/api/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"new@test.com\",\"password\":\"" + tooLong + "\",\"nickname\":\"신규\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void signup_missingNickname_returns400() throws Exception {
         mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
