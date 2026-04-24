@@ -43,7 +43,8 @@ class BadgeServiceTest {
 
     @BeforeEach
     void setUp() {
-        testMember = new Member("test@test.com", "encoded-password", "테스터", null);
+        testMember = new Member("test@test.com", "encoded-password", "테스터",
+                "https://img.test/p.jpg", AgeBracket.THIRTIES, Gender.MALE);
     }
 
     @Test

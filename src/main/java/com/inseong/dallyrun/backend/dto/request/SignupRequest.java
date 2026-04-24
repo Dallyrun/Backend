@@ -1,7 +1,10 @@
 package com.inseong.dallyrun.backend.dto.request;
 
+import com.inseong.dallyrun.backend.entity.AgeBracket;
+import com.inseong.dallyrun.backend.entity.Gender;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
@@ -19,7 +22,17 @@ public record SignupRequest(
         String password,
 
         @NotBlank(message = "닉네임은 필수입니다.")
-        @Size(max = 50, message = "닉네임은 50자 이하여야 합니다.")
-        String nickname
+        @Size(min = 2, max = 12, message = "닉네임은 2자 이상 12자 이하여야 합니다.")
+        @Pattern(
+                regexp = "^[가-힣A-Za-z0-9]+$",
+                message = "닉네임은 한글, 영문, 숫자만 사용할 수 있습니다."
+        )
+        String nickname,
+
+        @NotNull(message = "연령대는 필수입니다.")
+        AgeBracket ageBracket,
+
+        @NotNull(message = "성별은 필수입니다.")
+        Gender gender
 ) {
 }

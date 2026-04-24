@@ -4,13 +4,14 @@ import jakarta.persistence.*;
 
 /**
  * 회원 엔티티.
- * 이메일/비밀번호로 가입하며, 이메일이 고유 식별자 역할을 한다.
+ * 이메일/비밀번호로 가입하며, 이메일과 닉네임이 각각 고유하다.
  * 비밀번호는 BCrypt로 해시된 값만 저장한다.
  * RunningSession, Goal, MemberBadge와 1:N 관계를 갖는다.
  */
 @Entity
 @Table(name = "member", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "email")
+        @UniqueConstraint(columnNames = "email"),
+        @UniqueConstraint(columnNames = "nickname")
 })
 public class Member extends BaseTimeEntity {
 
@@ -27,17 +28,28 @@ public class Member extends BaseTimeEntity {
     @Column(nullable = false, length = 50)
     private String nickname;
 
-    @Column(length = 500)
+    @Column(nullable = false, length = 500)
     private String profileImageUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private AgeBracket ageBracket;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private Gender gender;
 
     protected Member() {
     }
 
-    public Member(String email, String passwordHash, String nickname, String profileImageUrl) {
+    public Member(String email, String passwordHash, String nickname,
+                  String profileImageUrl, AgeBracket ageBracket, Gender gender) {
         this.email = email;
         this.passwordHash = passwordHash;
         this.nickname = nickname;
         this.profileImageUrl = profileImageUrl;
+        this.ageBracket = ageBracket;
+        this.gender = gender;
     }
 
     public Long getId() {
@@ -58,6 +70,14 @@ public class Member extends BaseTimeEntity {
 
     public String getProfileImageUrl() {
         return profileImageUrl;
+    }
+
+    public AgeBracket getAgeBracket() {
+        return ageBracket;
+    }
+
+    public Gender getGender() {
+        return gender;
     }
 
     public void updateProfile(String nickname, String profileImageUrl) {

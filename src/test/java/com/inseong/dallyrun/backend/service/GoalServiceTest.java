@@ -4,6 +4,8 @@ import com.inseong.dallyrun.backend.dto.request.GoalCreateRequest;
 import com.inseong.dallyrun.backend.dto.request.GoalUpdateRequest;
 import com.inseong.dallyrun.backend.dto.response.GoalProgressResponse;
 import com.inseong.dallyrun.backend.dto.response.GoalResponse;
+import com.inseong.dallyrun.backend.entity.AgeBracket;
+import com.inseong.dallyrun.backend.entity.Gender;
 import com.inseong.dallyrun.backend.entity.Goal;
 import com.inseong.dallyrun.backend.entity.Member;
 import com.inseong.dallyrun.backend.entity.enums.GoalType;
@@ -46,7 +48,8 @@ class GoalServiceTest {
 
     @BeforeEach
     void setUp() {
-        testMember = new Member("test@test.com", "encoded-password", "테스터", null);
+        testMember = new Member("test@test.com", "encoded-password", "테스터",
+                "https://img.test/p.jpg", AgeBracket.THIRTIES, Gender.MALE);
         TestEntityHelper.setId(testMember, 1L);
     }
 
