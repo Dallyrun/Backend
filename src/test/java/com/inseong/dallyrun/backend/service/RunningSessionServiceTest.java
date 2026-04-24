@@ -4,6 +4,8 @@ import com.inseong.dallyrun.backend.dto.request.MemoUpdateRequest;
 import com.inseong.dallyrun.backend.dto.request.RunningSessionEndRequest;
 import com.inseong.dallyrun.backend.dto.response.RunningSessionResponse;
 import com.inseong.dallyrun.backend.dto.response.RunningSessionStartResponse;
+import com.inseong.dallyrun.backend.entity.AgeBracket;
+import com.inseong.dallyrun.backend.entity.Gender;
 import com.inseong.dallyrun.backend.entity.Member;
 import com.inseong.dallyrun.backend.entity.RunningSession;
 import com.inseong.dallyrun.backend.entity.enums.SessionStatus;
@@ -47,7 +49,8 @@ class RunningSessionServiceTest {
 
     @BeforeEach
     void setUp() {
-        testMember = new Member("test@test.com", "encoded-password", "테스터", null);
+        testMember = new Member("test@test.com", "encoded-password", "테스터",
+                "https://img.test/p.jpg", AgeBracket.THIRTIES, Gender.MALE);
         TestEntityHelper.setId(testMember, 1L);
     }
 

@@ -2,6 +2,8 @@ package com.inseong.dallyrun.backend.service;
 
 import com.inseong.dallyrun.backend.dto.request.MemberUpdateRequest;
 import com.inseong.dallyrun.backend.dto.response.MemberResponse;
+import com.inseong.dallyrun.backend.entity.AgeBracket;
+import com.inseong.dallyrun.backend.entity.Gender;
 import com.inseong.dallyrun.backend.entity.Member;
 import com.inseong.dallyrun.backend.exception.BusinessException;
 import com.inseong.dallyrun.backend.exception.ErrorCode;
@@ -40,7 +42,8 @@ class MemberServiceTest {
 
     @BeforeEach
     void setUp() {
-        testMember = new Member("test@test.com", "encoded-password", "테스터", null);
+        testMember = new Member("test@test.com", "encoded-password", "테스터",
+                "https://img.test/p.jpg", AgeBracket.THIRTIES, Gender.MALE);
         TestEntityHelper.setId(testMember, 1L);
     }
 
@@ -107,8 +110,6 @@ class MemberServiceTest {
 
         assertEquals("http://localhost:8080/uploads/profile-images/new.jpg", response.profileImageUrl());
         assertEquals("http://localhost:8080/uploads/profile-images/new.jpg", testMember.getProfileImageUrl());
-        // 이전 URL이 없었으므로 delete는 호출되지 않아야 함
-        verify(fileStorage, never()).delete(any());
     }
 
     @Test

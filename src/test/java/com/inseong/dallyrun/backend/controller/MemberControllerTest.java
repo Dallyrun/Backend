@@ -2,6 +2,8 @@ package com.inseong.dallyrun.backend.controller;
 
 import com.inseong.dallyrun.backend.config.SecurityConfig;
 import com.inseong.dallyrun.backend.dto.response.MemberResponse;
+import com.inseong.dallyrun.backend.entity.AgeBracket;
+import com.inseong.dallyrun.backend.entity.Gender;
 import com.inseong.dallyrun.backend.security.CustomUserDetails;
 import com.inseong.dallyrun.backend.security.CustomUserDetailsService;
 import com.inseong.dallyrun.backend.security.JwtAuthenticationFilter;
@@ -45,7 +47,8 @@ class MemberControllerTest {
 
     @Test
     void getProfile_success() throws Exception {
-        MemberResponse response = new MemberResponse(1L, "test@test.com", "테스터", null);
+        MemberResponse response = new MemberResponse(1L, "test@test.com", "테스터",
+                "https://img.test/p.jpg", AgeBracket.THIRTIES, Gender.MALE);
         when(memberService.getProfile(1L)).thenReturn(response);
 
         mockMvc.perform(get("/api/members/me")
@@ -56,7 +59,8 @@ class MemberControllerTest {
 
     @Test
     void updateProfile_success() throws Exception {
-        MemberResponse response = new MemberResponse(1L, "test@test.com", "새닉", null);
+        MemberResponse response = new MemberResponse(1L, "test@test.com", "새닉",
+                "https://img.test/p.jpg", AgeBracket.THIRTIES, Gender.MALE);
         when(memberService.updateProfile(eq(1L), any())).thenReturn(response);
 
         mockMvc.perform(patch("/api/members/me")
@@ -99,7 +103,8 @@ class MemberControllerTest {
                 "file", "avatar.jpg", "image/jpeg", new byte[]{1, 2, 3});
         MemberResponse response = new MemberResponse(
                 1L, "test@test.com", "테스터",
-                "http://localhost:8080/uploads/profile-images/new.jpg");
+                "http://localhost:8080/uploads/profile-images/new.jpg",
+                AgeBracket.THIRTIES, Gender.MALE);
         when(memberService.uploadProfileImage(eq(1L), any())).thenReturn(response);
 
         mockMvc.perform(multipart("/api/members/me/profile-image")

@@ -12,9 +12,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Auth", description = "인증 API — 이메일/비밀번호 회원가입·로그인, 토큰 갱신, 로그아웃. 가입/로그인/갱신은 인증 불필요.")
 @RestController
@@ -29,18 +31,20 @@ public class AuthController {
 
     @Operation(
             summary = "회원가입",
-            description = "이메일·비밀번호·닉네임으로 신규 회원을 생성하고 즉시 JWT 토큰을 발급합니다. "
-                    + "비밀번호는 BCrypt로 해시되어 저장되며, 이메일이 이미 존재하면 409를 반환합니다."
+            description = "이메일·비밀번호·닉네임·연령대·성별·프로필 이미지를 multipart/form-data 로 전송하여 신규 회원을 생성하고 "
+                    + "즉시 JWT 토큰을 발급합니다. `data` 파트는 JSON, `image` 파트는 이미지 파일입니다. "
+                    + "비밀번호는 BCrypt 해시 저장되며, 이메일·닉네임 중복 시 409 를 반환합니다."
     )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "가입 성공, JWT 토큰 반환"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 입력"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이미 사용 중인 이메일")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 입력(필수 누락, 규격 위반, 프로필 이미지 누락 등)"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이미 사용 중인 이메일 또는 닉네임")
     })
-    @PostMapping("/signup")
+    @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<TokenResponse>> signup(
-            @Valid @RequestBody SignupRequest request) {
-        TokenResponse response = authService.signup(request);
+            @Valid @RequestPart("data") SignupRequest data,
+            @RequestPart("image") MultipartFile image) {
+        TokenResponse response = authService.signup(data, image);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(response));
     }
 

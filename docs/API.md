@@ -85,14 +85,25 @@ Authorization: Bearer {accessToken}
 
 ### `POST /api/auth/signup` 🔓
 
-회원가입. 이메일·비밀번호·닉네임으로 신규 계정을 생성하고 즉시 JWT 토큰을 발급합니다.
+회원가입. 이메일·비밀번호·닉네임·연령대·성별·프로필 이미지로 신규 계정을 생성하고 즉시 JWT 토큰을 발급합니다.
 
-**Request**
+**Content-Type**: `multipart/form-data`
+
+두 개의 파트로 구성합니다.
+
+| 파트 이름 | 타입 | 설명 |
+|-----------|------|------|
+| `data` | `application/json` | 아래 필드를 담은 JSON |
+| `image` | 이미지 파일 | 프로필 이미지 (필수) |
+
+**`data` 파트 JSON 예시**
 ```json
 {
   "email": "user@example.com",
   "password": "Password123!",
-  "nickname": "달리기왕"
+  "nickname": "달리기왕",
+  "ageBracket": 20,
+  "gender": "MALE"
 }
 ```
 
@@ -100,7 +111,15 @@ Authorization: Bearer {accessToken}
 |------|------|
 | `email` | 유효한 이메일 형식, 필수, 고유 |
 | `password` | 8자 이상 30자 이하, 영문·숫자·ASCII 특수기호 모두 포함, ASCII 전용, 필수 |
-| `nickname` | 50자 이하, 필수 |
+| `nickname` | 2자 이상 12자 이하, 한글/영문/숫자만 사용, 필수, 고유 |
+| `ageBracket` | `20 \| 30 \| 40 \| 50 \| 60` 중 하나 (60 = "60대 이상"), 필수 |
+| `gender` | `MALE \| FEMALE`, 필수 |
+
+**프로필 이미지 규격**
+
+- MIME: `image/jpeg`, `image/png`, `image/webp`
+- 최대 크기: 5MB (서버 `spring.servlet.multipart.max-file-size` 설정)
+- 업로드된 이미지는 서버가 UUID 기반 파일명으로 재저장하며, 응답으로 돌려주는 프로필 URL은 `GET /api/members/me` 등에서 확인 가능
 
 **비밀번호 규격 (클라이언트도 동일하게 검증)**
 
@@ -117,6 +136,20 @@ Authorization: Bearer {accessToken}
   ```
 - 위반 시 응답: `400 VALIDATION_ERROR` (`@Pattern`/`@Size` 중 먼저 실패한 메시지)
 
+**닉네임 규격 (클라이언트도 동일하게 검증)**
+
+- 길이: 2자 이상 12자 이하
+- 허용 문자: 한글(완성형) `가-힣`, 영문 `A-Za-z`, 숫자 `0-9` 만. 공백·특수기호·이모지 등 금지
+- 참고 정규식: `^[가-힣A-Za-z0-9]{2,12}$`
+- 유니크: 이미 사용 중인 닉네임은 `409 NICKNAME_ALREADY_EXISTS`
+
+**cURL 예시**
+```bash
+curl -X POST http://localhost:8080/api/auth/signup \
+  -F 'data={"email":"a@a.com","password":"Password123!","nickname":"런너123","ageBracket":20,"gender":"MALE"};type=application/json' \
+  -F 'image=@./profile.jpg'
+```
+
 **Response** `201 Created`
 ```json
 {
@@ -129,8 +162,11 @@ Authorization: Bearer {accessToken}
 
 | 에러 | 상태 | 상황 |
 |------|------|------|
-| `INVALID_INPUT` | 400 | 유효성 검증 실패 |
+| `INVALID_INPUT` | 400 | 유효성 검증 실패 (필드 규격 위반, ageBracket 비허용 값 등) |
+| `PROFILE_IMAGE_REQUIRED` | 400 | `image` 파트 누락 또는 빈 파일 |
+| `INVALID_FILE_TYPE` | 400 | 허용되지 않은 이미지 MIME 타입 |
 | `EMAIL_ALREADY_EXISTS` | 409 | 이미 사용 중인 이메일 |
+| `NICKNAME_ALREADY_EXISTS` | 409 | 이미 사용 중인 닉네임 |
 
 ### `POST /api/auth/login` 🔓
 
@@ -196,7 +232,9 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
     "id": 1,
     "email": "user@example.com",
     "nickname": "달리기왕",
-    "profileImageUrl": "https://..."
+    "profileImageUrl": "https://...",
+    "ageBracket": 20,
+    "gender": "MALE"
   }
 }
 ```
