@@ -49,6 +49,8 @@ server:
       directory: /dev
       prefix: stdout
       suffix: ""
+      file-date-format: ""
+      rotate: false
       buffered: false
       pattern: '%t %a "%r" %s %b %D ms'
 
