@@ -43,6 +43,14 @@ spring:
 
 server:
   port: 8080
+  tomcat:
+    accesslog:
+      enabled: true
+      directory: /dev
+      prefix: stdout
+      suffix: ""
+      buffered: false
+      pattern: '%t %a "%r" %s %b %D ms'
 
 storage:
   local:
