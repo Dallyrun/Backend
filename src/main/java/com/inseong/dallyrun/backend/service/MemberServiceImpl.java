@@ -7,6 +7,7 @@ import com.inseong.dallyrun.backend.exception.BusinessException;
 import com.inseong.dallyrun.backend.exception.ErrorCode;
 import com.inseong.dallyrun.backend.repository.MemberRepository;
 import com.inseong.dallyrun.backend.storage.FileStorage;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,10 +25,17 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final FileStorage fileStorage;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
-    public MemberServiceImpl(MemberRepository memberRepository, FileStorage fileStorage) {
+    public MemberServiceImpl(MemberRepository memberRepository,
+                             FileStorage fileStorage,
+                             PasswordEncoder passwordEncoder,
+                             AuthService authService) {
         this.memberRepository = memberRepository;
         this.fileStorage = fileStorage;
+        this.passwordEncoder = passwordEncoder;
+        this.authService = authService;
     }
 
     @Override
@@ -77,10 +85,23 @@ public class MemberServiceImpl implements MemberService {
         return MemberResponse.from(member);
     }
 
+    /**
+     * 회원 soft delete.
+     * 1) 회원 조회 (이미 탈퇴된 회원은 {@code @SQLRestriction} 으로 자동 제외 → MEMBER_NOT_FOUND)
+     * 2) 비밀번호 재확인 (불일치 시 INVALID_CREDENTIALS)
+     * 3) {@code deletedAt} 채워서 dirty checking 으로 UPDATE
+     * 4) Redis 의 refresh token 즉시 폐기
+     */
     @Override
-    public void deleteMember(Long memberId) {
+    public void deleteMember(Long memberId, String password) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
-        memberRepository.delete(member);
+
+        if (!passwordEncoder.matches(password, member.getPasswordHash())) {
+            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
+        }
+
+        member.softDelete();
+        authService.logout(memberId);
     }
 }

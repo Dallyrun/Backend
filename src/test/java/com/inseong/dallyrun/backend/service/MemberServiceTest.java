@@ -17,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
@@ -34,6 +35,12 @@ class MemberServiceTest {
 
     @Mock
     private FileStorage fileStorage;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private AuthService authService;
 
     @InjectMocks
     private MemberServiceImpl memberService;
@@ -83,19 +90,40 @@ class MemberServiceTest {
     }
 
     @Test
-    void deleteMember_success() {
+    void deleteMember_success_softDeletesAndLogsOut() {
         when(memberRepository.findById(1L)).thenReturn(Optional.of(testMember));
+        when(passwordEncoder.matches("rawPassword", "encoded-password")).thenReturn(true);
 
-        memberService.deleteMember(1L);
+        memberService.deleteMember(1L, "rawPassword");
 
-        verify(memberRepository).delete(testMember);
+        // soft delete: 행이 살아있고 deletedAt 이 채워진다
+        assertNotNull(testMember.getDeletedAt());
+        verify(memberRepository, never()).delete(testMember);
+        // refresh token 폐기
+        verify(authService).logout(1L);
+    }
+
+    @Test
+    void deleteMember_wrongPassword_throwsInvalidCredentials() {
+        when(memberRepository.findById(1L)).thenReturn(Optional.of(testMember));
+        when(passwordEncoder.matches("wrongPassword", "encoded-password")).thenReturn(false);
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> memberService.deleteMember(1L, "wrongPassword"));
+        assertEquals(ErrorCode.INVALID_CREDENTIALS, ex.getErrorCode());
+        // 비밀번호 틀리면 soft delete / logout 모두 일어나선 안 됨
+        assertNull(testMember.getDeletedAt());
+        verify(authService, never()).logout(any());
     }
 
     @Test
     void deleteMember_notFound_throwsException() {
         when(memberRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(BusinessException.class, () -> memberService.deleteMember(99L));
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> memberService.deleteMember(99L, "anything"));
+        assertEquals(ErrorCode.MEMBER_NOT_FOUND, ex.getErrorCode());
+        verify(authService, never()).logout(any());
     }
 
     @Test

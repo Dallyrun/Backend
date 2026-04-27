@@ -17,5 +17,14 @@ public interface MemberService {
      */
     MemberResponse uploadProfileImage(Long memberId, MultipartFile file);
 
-    void deleteMember(Long memberId);
+    /**
+     * 회원을 soft delete 한다.
+     * 계정 탈취 방지를 위해 현재 비밀번호 일치 여부를 검증한 뒤에만 삭제한다.
+     * 삭제 후 보관 중인 refresh token 도 즉시 폐기된다.
+     *
+     * @throws com.inseong.dallyrun.backend.exception.BusinessException
+     *         - {@link com.inseong.dallyrun.backend.exception.ErrorCode#MEMBER_NOT_FOUND} 회원이 없거나 이미 탈퇴
+     *         - {@link com.inseong.dallyrun.backend.exception.ErrorCode#INVALID_CREDENTIALS} 비밀번호 불일치
+     */
+    void deleteMember(Long memberId, String password);
 }

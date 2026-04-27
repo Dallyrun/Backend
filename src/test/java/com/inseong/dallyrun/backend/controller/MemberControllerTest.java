@@ -4,6 +4,8 @@ import com.inseong.dallyrun.backend.config.SecurityConfig;
 import com.inseong.dallyrun.backend.dto.response.MemberResponse;
 import com.inseong.dallyrun.backend.entity.AgeBracket;
 import com.inseong.dallyrun.backend.entity.Gender;
+import com.inseong.dallyrun.backend.exception.BusinessException;
+import com.inseong.dallyrun.backend.exception.ErrorCode;
 import com.inseong.dallyrun.backend.security.CustomUserDetails;
 import com.inseong.dallyrun.backend.security.CustomUserDetailsService;
 import com.inseong.dallyrun.backend.security.JwtAuthenticationFilter;
@@ -21,6 +23,8 @@ import org.springframework.mock.web.MockMultipartFile;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -74,10 +78,35 @@ class MemberControllerTest {
     @Test
     void deleteMember_success() throws Exception {
         mockMvc.perform(delete("/api/members/me")
-                        .with(user(testUser)))
+                        .with(user(testUser))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"password\":\"rawPassword\"}"))
                 .andExpect(status().isOk());
 
-        verify(memberService).deleteMember(1L);
+        verify(memberService).deleteMember(1L, "rawPassword");
+    }
+
+    @Test
+    void deleteMember_blankPassword_returns400() throws Exception {
+        mockMvc.perform(delete("/api/members/me")
+                        .with(user(testUser))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"password\":\"\"}"))
+                .andExpect(status().isBadRequest());
+
+        verify(memberService, never()).deleteMember(any(), any());
+    }
+
+    @Test
+    void deleteMember_wrongPassword_returns401() throws Exception {
+        doThrow(new BusinessException(ErrorCode.INVALID_CREDENTIALS))
+                .when(memberService).deleteMember(eq(1L), eq("wrongPassword"));
+
+        mockMvc.perform(delete("/api/members/me")
+                        .with(user(testUser))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"password\":\"wrongPassword\"}"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

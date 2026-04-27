@@ -1,11 +1,13 @@
 package com.inseong.dallyrun.backend.controller;
 
+import com.inseong.dallyrun.backend.dto.request.MemberDeleteRequest;
 import com.inseong.dallyrun.backend.dto.request.MemberUpdateRequest;
 import com.inseong.dallyrun.backend.dto.response.ApiResponse;
 import com.inseong.dallyrun.backend.dto.response.MemberResponse;
 import com.inseong.dallyrun.backend.security.CustomUserDetails;
 import com.inseong.dallyrun.backend.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -65,13 +67,20 @@ public class MemberController {
 
     @Operation(
             summary = "계정 삭제 (탈퇴)",
-            description = "회원 계정을 삭제합니다. 관련 러닝 기록, 목표, 뱃지 데이터도 함께 삭제됩니다. "
-                    + "이 작업은 되돌릴 수 없습니다."
+            description = "회원 계정을 soft delete 합니다. 계정 탈취 방지를 위해 현재 비밀번호를 본문으로 한 번 더 받아 검증합니다. "
+                    + "탈퇴 후에는 모든 조회·로그인이 차단되며, 보관 중인 refresh token 도 즉시 폐기됩니다."
     )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "탈퇴 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "비밀번호 누락 등 입력 오류"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "비밀번호 불일치"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "회원을 찾을 수 없음 (이미 탈퇴 등)")
+    })
     @DeleteMapping("/me")
     public ResponseEntity<Void> deleteMember(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        memberService.deleteMember(userDetails.getMemberId());
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody MemberDeleteRequest request) {
+        memberService.deleteMember(userDetails.getMemberId(), request.password());
         return ResponseEntity.ok().build();
     }
 }
