@@ -121,6 +121,61 @@ class BadgeServiceTest {
     }
 
     @Test
+    void checkAndAwardBadges_earlyMorning_awards() {
+        Badge badge = new Badge("새벽 러너", "설명", null, ConditionType.EARLY_MORNING_COUNT, 1.0);
+        TestEntityHelper.setId(badge, 10L);
+        RunningSession session = new RunningSession(testMember);
+        session.complete(LocalDateTime.now(), 3000.0, 1200L, 6.7);
+
+        when(memberRepository.findById(1L)).thenReturn(Optional.of(testMember));
+        when(badgeRepository.findAll()).thenReturn(List.of(badge));
+        when(memberBadgeRepository.findBadgeIdsByMemberId(1L)).thenReturn(Set.of());
+        when(runningSessionRepository.countCompletedInEarlyMorning(1L)).thenReturn(1L);
+
+        badgeService.checkAndAwardBadges(1L, session);
+
+        ArgumentCaptor<MemberBadge> captor = ArgumentCaptor.forClass(MemberBadge.class);
+        verify(memberBadgeRepository).save(captor.capture());
+        assertEquals(badge, captor.getValue().getBadge());
+    }
+
+    @Test
+    void checkAndAwardBadges_earlyMorning_notMet_skips() {
+        Badge badge = new Badge("새벽 러너", "설명", null, ConditionType.EARLY_MORNING_COUNT, 1.0);
+        TestEntityHelper.setId(badge, 10L);
+        RunningSession session = new RunningSession(testMember);
+        session.complete(LocalDateTime.now(), 3000.0, 1200L, 6.7);
+
+        when(memberRepository.findById(1L)).thenReturn(Optional.of(testMember));
+        when(badgeRepository.findAll()).thenReturn(List.of(badge));
+        when(memberBadgeRepository.findBadgeIdsByMemberId(1L)).thenReturn(Set.of());
+        when(runningSessionRepository.countCompletedInEarlyMorning(1L)).thenReturn(0L);
+
+        badgeService.checkAndAwardBadges(1L, session);
+
+        verify(memberBadgeRepository, never()).save(any(MemberBadge.class));
+    }
+
+    @Test
+    void checkAndAwardBadges_lateNight_awards() {
+        Badge badge = new Badge("심야 러너", "설명", null, ConditionType.LATE_NIGHT_COUNT, 1.0);
+        TestEntityHelper.setId(badge, 11L);
+        RunningSession session = new RunningSession(testMember);
+        session.complete(LocalDateTime.now(), 4000.0, 1500L, 6.25);
+
+        when(memberRepository.findById(1L)).thenReturn(Optional.of(testMember));
+        when(badgeRepository.findAll()).thenReturn(List.of(badge));
+        when(memberBadgeRepository.findBadgeIdsByMemberId(1L)).thenReturn(Set.of());
+        when(runningSessionRepository.countCompletedInLateNight(1L)).thenReturn(1L);
+
+        badgeService.checkAndAwardBadges(1L, session);
+
+        ArgumentCaptor<MemberBadge> captor = ArgumentCaptor.forClass(MemberBadge.class);
+        verify(memberBadgeRepository).save(captor.capture());
+        assertEquals(badge, captor.getValue().getBadge());
+    }
+
+    @Test
     void checkAndAwardBadges_loadsOwnedBadgesOnce_noN1Query() {
         // N+1 방지 검증: existsByMemberIdAndBadgeId는 호출되지 않고, findBadgeIdsByMemberId가 한 번만 호출된다.
         Badge badge1 = new Badge("첫 러닝", "설명", null, ConditionType.TOTAL_COUNT, 1.0);
