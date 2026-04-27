@@ -63,6 +63,8 @@ public class BadgeServiceImpl implements BadgeService {
      *   <li>TOTAL_DISTANCE — 누적 총 거리(m)</li>
      *   <li>SINGLE_DISTANCE — 현재 세션의 단일 거리(m)</li>
      *   <li>STREAK_DAYS — 연속 러닝 일수</li>
+     *   <li>EARLY_MORNING_COUNT — 새벽(04~06시) 시작 완료 세션 누적 횟수</li>
+     *   <li>LATE_NIGHT_COUNT — 심야(22~03시 다음날) 시작 완료 세션 누적 횟수</li>
      * </ul>
      */
     @Override
@@ -96,6 +98,14 @@ public class BadgeServiceImpl implements BadgeService {
                 case STREAK_DAYS -> {
                     int streak = calculateStreak(memberId);
                     yield streak >= badge.getConditionValue();
+                }
+                case EARLY_MORNING_COUNT -> {
+                    long count = runningSessionRepository.countCompletedInEarlyMorning(memberId);
+                    yield count >= badge.getConditionValue();
+                }
+                case LATE_NIGHT_COUNT -> {
+                    long count = runningSessionRepository.countCompletedInLateNight(memberId);
+                    yield count >= badge.getConditionValue();
                 }
             };
 

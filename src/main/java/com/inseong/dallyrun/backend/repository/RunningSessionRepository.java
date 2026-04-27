@@ -51,4 +51,20 @@ public interface RunningSessionRepository extends JpaRepository<RunningSession, 
             "WHERE rs.member.id = :memberId AND rs.status = 'COMPLETED' " +
             "ORDER BY CAST(rs.startedAt AS localdate) DESC")
     List<java.time.LocalDate> findDistinctRunDates(@Param("memberId") Long memberId);
+
+    /**
+     * 시작 시각이 새벽(04:00~06:59) 인 완료 세션 수.
+     */
+    @Query("SELECT COUNT(rs) FROM RunningSession rs " +
+            "WHERE rs.member.id = :memberId AND rs.status = 'COMPLETED' " +
+            "AND EXTRACT(HOUR FROM rs.startedAt) BETWEEN 4 AND 6")
+    long countCompletedInEarlyMorning(@Param("memberId") Long memberId);
+
+    /**
+     * 시작 시각이 심야(22:00~03:59 다음날) 인 완료 세션 수.
+     */
+    @Query("SELECT COUNT(rs) FROM RunningSession rs " +
+            "WHERE rs.member.id = :memberId AND rs.status = 'COMPLETED' " +
+            "AND (EXTRACT(HOUR FROM rs.startedAt) >= 22 OR EXTRACT(HOUR FROM rs.startedAt) <= 3)")
+    long countCompletedInLateNight(@Param("memberId") Long memberId);
 }
