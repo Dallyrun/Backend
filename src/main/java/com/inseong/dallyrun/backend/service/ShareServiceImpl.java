@@ -3,9 +3,11 @@ package com.inseong.dallyrun.backend.service;
 import com.inseong.dallyrun.backend.config.ShareConfig;
 import com.inseong.dallyrun.backend.dto.response.ShareDataResponse;
 import com.inseong.dallyrun.backend.dto.response.ShareLinkResponse;
+import com.inseong.dallyrun.backend.entity.Member;
 import com.inseong.dallyrun.backend.entity.RunningSession;
 import com.inseong.dallyrun.backend.exception.BusinessException;
 import com.inseong.dallyrun.backend.exception.ErrorCode;
+import com.inseong.dallyrun.backend.repository.MemberRepository;
 import com.inseong.dallyrun.backend.repository.RunningSessionRepository;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -24,13 +26,16 @@ public class ShareServiceImpl implements ShareService {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final RunningSessionRepository runningSessionRepository;
+    private final MemberRepository memberRepository;
     private final StringRedisTemplate redisTemplate;
     private final ShareConfig shareConfig;
 
     public ShareServiceImpl(RunningSessionRepository runningSessionRepository,
+                            MemberRepository memberRepository,
                             StringRedisTemplate redisTemplate,
                             ShareConfig shareConfig) {
         this.runningSessionRepository = runningSessionRepository;
+        this.memberRepository = memberRepository;
         this.redisTemplate = redisTemplate;
         this.shareConfig = shareConfig;
     }
@@ -39,7 +44,8 @@ public class ShareServiceImpl implements ShareService {
     @Transactional(readOnly = true)
     public ShareDataResponse getShareData(Long memberId, Long sessionId) {
         RunningSession session = getOwnedSession(memberId, sessionId);
-        return ShareDataResponse.of(session.getMember().getNickname(), session);
+        Member member = loadActiveMember(session);
+        return ShareDataResponse.of(member.getNickname(), session);
     }
 
     @Override
@@ -59,6 +65,14 @@ public class ShareServiceImpl implements ShareService {
         return new ShareLinkResponse(shareCode, shareUrl);
     }
 
+    /**
+     * 공개 공유 링크 조회 (인증 불필요).
+     *
+     * <p>탈퇴(soft delete)한 회원의 데이터가 외부에 노출되지 않도록,
+     * 세션 소유 회원이 살아있는지 명시적으로 확인한다. 회원이 탈퇴 상태면
+     * {@link ErrorCode#SHARE_NOT_FOUND} (404) 로 응답해 만료된 링크처럼 보이게 한다.
+     * Redis 의 공유 키는 TTL 만료로 자연 정리됨.
+     */
     @Override
     @Transactional(readOnly = true)
     public ShareDataResponse getSharedData(String shareCode) {
@@ -75,10 +89,12 @@ public class ShareServiceImpl implements ShareService {
             throw new BusinessException(ErrorCode.SHARE_NOT_FOUND);
         }
 
+        // 세션을 못 찾거나 회원이 탈퇴한 경우 모두 SHARE_NOT_FOUND 로 통일 (정보 노출 정책 일관성).
         RunningSession session = runningSessionRepository.findById(sessionId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.RUNNING_SESSION_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.SHARE_NOT_FOUND));
 
-        return ShareDataResponse.of(session.getMember().getNickname(), session);
+        Member member = loadActiveMember(session);
+        return ShareDataResponse.of(member.getNickname(), session);
     }
 
     private RunningSession getOwnedSession(Long memberId, Long sessionId) {
@@ -88,6 +104,19 @@ public class ShareServiceImpl implements ShareService {
             throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
         return session;
+    }
+
+    /**
+     * 세션의 소유 회원을 명시적으로 조회한다. {@code session.getMember()} lazy proxy 의
+     * 초기화는 {@link com.inseong.dallyrun.backend.entity.Member} 의 {@code @SQLRestriction}
+     * 으로 인해 탈퇴 회원에 대해선 {@code EntityNotFoundException} 을 던지므로,
+     * FK ID 만 꺼내 {@link MemberRepository#findById} 로 안전하게 조회한다.
+     * 탈퇴 회원이면 {@link ErrorCode#SHARE_NOT_FOUND}.
+     */
+    private Member loadActiveMember(RunningSession session) {
+        Long memberId = session.getMember().getId(); // FK only — proxy 초기화 X
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SHARE_NOT_FOUND));
     }
 
     /**

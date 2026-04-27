@@ -8,6 +8,8 @@ import com.inseong.dallyrun.backend.entity.Gender;
 import com.inseong.dallyrun.backend.entity.Member;
 import com.inseong.dallyrun.backend.entity.RunningSession;
 import com.inseong.dallyrun.backend.exception.BusinessException;
+import com.inseong.dallyrun.backend.exception.ErrorCode;
+import com.inseong.dallyrun.backend.repository.MemberRepository;
 import com.inseong.dallyrun.backend.repository.RunningSessionRepository;
 import com.inseong.dallyrun.backend.support.TestEntityHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +33,8 @@ class ShareServiceTest {
     @Mock
     private RunningSessionRepository runningSessionRepository;
     @Mock
+    private MemberRepository memberRepository;
+    @Mock
     private StringRedisTemplate redisTemplate;
     @Mock
     private ValueOperations<String, String> valueOperations;
@@ -42,7 +46,8 @@ class ShareServiceTest {
     void setUp() {
         lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         ShareConfig shareConfig = new ShareConfig(30);
-        shareService = new ShareServiceImpl(runningSessionRepository, redisTemplate, shareConfig);
+        shareService = new ShareServiceImpl(runningSessionRepository, memberRepository,
+                redisTemplate, shareConfig);
         testMember = new Member("test@test.com", "encoded-password", "테스터",
                 "https://img.test/p.jpg", AgeBracket.THIRTIES, Gender.MALE);
         TestEntityHelper.setId(testMember, 1L);
@@ -54,6 +59,7 @@ class ShareServiceTest {
         TestEntityHelper.setId(session, 1L);
         session.complete(LocalDateTime.now(), 5000.0, 1800L, 6.0);
         when(runningSessionRepository.findById(1L)).thenReturn(Optional.of(session));
+        when(memberRepository.findById(1L)).thenReturn(Optional.of(testMember));
 
         ShareDataResponse response = shareService.getShareData(1L, 1L);
 
@@ -82,6 +88,7 @@ class ShareServiceTest {
         session.complete(LocalDateTime.now(), 5000.0, 1800L, 6.0);
         when(valueOperations.get("share:abc123")).thenReturn("1");
         when(runningSessionRepository.findById(1L)).thenReturn(Optional.of(session));
+        when(memberRepository.findById(1L)).thenReturn(Optional.of(testMember));
 
         ShareDataResponse response = shareService.getSharedData("abc123");
 
@@ -102,5 +109,34 @@ class ShareServiceTest {
 
         assertThrows(BusinessException.class, () -> shareService.getSharedData("corrupted"));
         verify(runningSessionRepository, never()).findById(any());
+    }
+
+    @Test
+    void getSharedData_memberSoftDeleted_throwsShareNotFound() {
+        // 세션 소유자가 탈퇴(soft delete) 한 경우, MemberRepository.findById 가 비어
+        // SHARE_NOT_FOUND 로 응답하여 외부에 데이터가 노출되지 않아야 한다.
+        RunningSession session = new RunningSession(testMember);
+        TestEntityHelper.setId(session, 1L);
+        session.complete(LocalDateTime.now(), 5000.0, 1800L, 6.0);
+        when(valueOperations.get("share:abc123")).thenReturn("1");
+        when(runningSessionRepository.findById(1L)).thenReturn(Optional.of(session));
+        when(memberRepository.findById(1L)).thenReturn(Optional.empty());
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> shareService.getSharedData("abc123"));
+        assertEquals(ErrorCode.SHARE_NOT_FOUND, ex.getErrorCode());
+    }
+
+    @Test
+    void getSharedData_sessionNotFound_throwsShareNotFound() {
+        // 세션 자체가 사라진 경우에도 RUNNING_SESSION_NOT_FOUND 가 아닌 SHARE_NOT_FOUND 로
+        // 통일하여 외부에 노출되는 에러 코드를 일관되게 유지한다.
+        when(valueOperations.get("share:abc123")).thenReturn("999");
+        when(runningSessionRepository.findById(999L)).thenReturn(Optional.empty());
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> shareService.getSharedData("abc123"));
+        assertEquals(ErrorCode.SHARE_NOT_FOUND, ex.getErrorCode());
+        verify(memberRepository, never()).findById(any());
     }
 }
