@@ -77,7 +77,7 @@ docker compose down -v               # 중지 + 볼륨 삭제 (DB 초기화)
 ## 주요 기능
 
 - **Auth** — 이메일/비밀번호 회원가입·로그인, JWT 토큰 발급/갱신
-- **Member** — 회원 프로필 조회/수정
+- **Member** — 회원 프로필 조회/수정, 계정 탈퇴(soft delete + 비밀번호 재확인)
 - **Running Session** — GPS 기반 러닝 기록 생성/조회/삭제, 통계
 - **Goal** — 러닝 목표 설정/관리, 달성률 추적
 - **Badge** — 활동 기반 뱃지 시스템
