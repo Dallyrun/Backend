@@ -1,13 +1,21 @@
 package com.inseong.dallyrun.backend.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLRestriction;
+
+import java.time.LocalDateTime;
 
 /**
  * 회원 엔티티.
  * 이메일/비밀번호로 가입하며, 이메일과 닉네임이 각각 고유하다.
  * 비밀번호는 BCrypt로 해시된 값만 저장한다.
  * RunningSession, Goal, MemberBadge와 1:N 관계를 갖는다.
+ *
+ * <p>Soft delete: {@code deleted_at} 컬럼이 채워진 회원은 모든 SELECT 쿼리에서
+ * 자동 제외된다 ({@link SQLRestriction}). 행 자체는 DB 에 유지되어
+ * 자식 엔티티(러닝 세션 등)의 FK 무결성이 깨지지 않는다.
  */
+@SQLRestriction("deleted_at IS NULL")
 @Entity
 @Table(name = "member", uniqueConstraints = {
         @UniqueConstraint(columnNames = "email"),
@@ -38,6 +46,9 @@ public class Member extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     private Gender gender;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     protected Member() {
     }
@@ -80,6 +91,10 @@ public class Member extends BaseTimeEntity {
         return gender;
     }
 
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
+    }
+
     public void updateProfile(String nickname, String profileImageUrl) {
         if (nickname != null) {
             this.nickname = nickname;
@@ -87,5 +102,13 @@ public class Member extends BaseTimeEntity {
         if (profileImageUrl != null) {
             this.profileImageUrl = profileImageUrl;
         }
+    }
+
+    /**
+     * 회원을 soft delete 한다. {@code deletedAt} 만 채우고 행은 유지한다.
+     * 이후 모든 조회 쿼리는 {@link SQLRestriction} 에 의해 자동 제외된다.
+     */
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
     }
 }
