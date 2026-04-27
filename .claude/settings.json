@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "방금 종료된 Claude 세션의 transcript 를 검토해 트러블슈팅(TROUBLE) / 의식적 트레이드오프(TRADEOFF) / 성능 개선(PERF) 사례가 있었으면 .claude/TROUBLESHOOTING.md 에 새 항목을 추가하라.\n\n절차·형식·판단 기준은 .claude/agents/troubleshooting-recorder.md 의 가이드를 따른다. 보수적으로 — 단순 코드 작성·문서 정리·CI 통과 같은 잡무는 기록 X. 동일 사례 중복 기록 X. 애매하면 기록 X.\n\nHook input: $ARGUMENTS\n\n출력은 한 줄: 기록했으면 추가한 제목, 안 했으면 \"기록할 사례 없음\".",
+            "timeout": 120,
+            "statusMessage": "트러블슈팅 검토"
+          }
+        ]
+      }
+    ]
+  }
+}
