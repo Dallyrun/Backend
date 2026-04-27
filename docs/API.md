@@ -271,7 +271,23 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 
 ### `DELETE /api/members/me`
 
-계정 삭제 (탈퇴).
+계정 탈퇴 (soft delete). 계정 탈취 방지를 위해 본문으로 현재 비밀번호를 받아 검증합니다.
+탈퇴 후엔 모든 조회·로그인이 차단되며, 보관 중인 refresh token 도 즉시 폐기됩니다. 행 자체는 보존되지만 `@SQLRestriction` 으로 모든 SELECT 에서 자동 제외됩니다.
+
+**Request**
+```json
+{ "password": "현재비밀번호" }
+```
+
+**Response** `200 OK` (본문 없음)
+
+| 에러 | 상태 | 상황 |
+|------|------|------|
+| `INVALID_INPUT` | 400 | 비밀번호 누락 |
+| `INVALID_CREDENTIALS` | 401 | 비밀번호 불일치 |
+| `MEMBER_NOT_FOUND` | 404 | 회원 없음 (이미 탈퇴 등) |
+
+> **클라이언트 가이드**: 200 응답 후 로컬 access/refresh 토큰을 삭제하고 로그인 화면으로 이동합니다.
 
 ---
 
@@ -562,6 +578,16 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 | 500km 돌파 | 누적 거리 | 500,000m |
 | 7일 연속 | 연속 러닝 | 7일 |
 | 30일 연속 | 연속 러닝 | 30일 |
+| 10K 클럽 | 누적 거리 | 10,000m |
+| 50K 클럽 | 누적 거리 | 50,000m |
+| 100K 클럽 | 누적 거리 | 100,000m |
+| 7일 러너 | 연속 러닝 | 7일 |
+| 30일 러너 | 연속 러닝 | 30일 |
+| 100일 러너 | 연속 러닝 | 100일 |
+| 새벽 러너 | 새벽(04~06시) 시작 1회 이상 | 1회 |
+| 심야 러너 | 심야(22~03시) 시작 1회 이상 | 1회 |
+
+> 거리 마일스톤(10K/50K/100K 클럽), 연속 러닝(7/30/100일), 시간대(새벽/심야) 시리즈가 추가되었습니다. 일부는 기존 배지(`100km 돌파`, `7일 연속`, `30일 연속`)와 조건이 동일해 동시에 부여될 수 있습니다.
 
 ### `GET /api/badges`
 
@@ -654,6 +680,8 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 
 **Response** — `ShareDataResponse`와 동일
 
+> **탈퇴 회원 보호**: 세션 소유 회원이 탈퇴(soft delete)한 상태면 `404 SHARE_NOT_FOUND` 를 반환하여 외부에 데이터가 노출되지 않도록 합니다. (만료된 링크와 동일하게 보임)
+
 ---
 
 ## 에러 코드
@@ -685,4 +713,4 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 | SessionStatus | `IN_PROGRESS`, `COMPLETED` | 러닝 세션 상태 |
 | GoalType | `WEEKLY`, `MONTHLY` | 목표 유형 |
 | MetricType | `DISTANCE`, `TIME`, `COUNT` | 목표 측정 기준 (미터/초/횟수) |
-| ConditionType | `TOTAL_DISTANCE`, `TOTAL_COUNT`, `SINGLE_DISTANCE`, `STREAK_DAYS` | 뱃지 조건 유형 |
+| ConditionType | `TOTAL_DISTANCE`, `TOTAL_COUNT`, `SINGLE_DISTANCE`, `STREAK_DAYS`, `EARLY_MORNING_COUNT`, `LATE_NIGHT_COUNT` | 뱃지 조건 유형 |
