@@ -29,7 +29,8 @@ public class SecurityConfig {
      * <p>주요 정책:
      * - CSRF 비활성화: JWT 기반 Stateless 인증이므로 CSRF 토큰 불필요
      * - 세션 미사용: STATELESS 정책으로 서버 측 세션 생성 방지
-     * - 인증 불필요 경로: 로그인(/api/auth/**), 공유 링크 조회, Swagger UI
+     * - 인증 불필요 경로: 회원가입/로그인/토큰 갱신, 공유 링크 조회, Swagger UI
+     * - 로그아웃은 인증된 사용자 ID로 refresh token 을 삭제하므로 인증 필요
      * - 미인증 요청 시 401 응답 (로그인 폼 리다이렉트 대신)
      * - JWT 필터를 UsernamePasswordAuthenticationFilter 앞에 배치
      */
@@ -43,6 +44,7 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/logout").authenticated()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/shares/{shareCode}").permitAll()
                         .requestMatchers("/uploads/**").permitAll()

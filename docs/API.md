@@ -213,6 +213,11 @@ Access Token 만료 시 Refresh Token으로 새 토큰을 발급받습니다.
 
 로그아웃. 서버의 Refresh Token을 삭제합니다.
 
+**Headers**
+```http
+Authorization: Bearer {accessToken}
+```
+
 **Response** `200 OK` (본문 없음)
 
 > **안드로이드 구현 가이드**: 로그아웃 시 앱 로컬의 토큰도 함께 삭제해야 합니다.
