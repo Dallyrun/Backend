@@ -6,6 +6,20 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 Dallyrun Backend — 런닝 트래킹 앱을 위한 백엔드 서버. Spring Boot 4.0.5, Java 17, Gradle 9.4.1 기반. PostgreSQL, Redis, Spring Security 사용.
 
+## Required Shared Harness
+
+Before planning or editing, read `docs/HARNESS.md`.
+
+Follow its gates in order:
+1. Context
+2. Plan
+3. Implementation
+4. Verification
+5. Documentation
+6. PR
+
+Record troubleshooting, tradeoffs, and reusable lessons in `docs/TROUBLESHOOTING.md`.
+
 ## Build & Run Commands
 
 ```bash
@@ -59,7 +73,7 @@ docker compose down      # 중지 (데이터 유지, -v 추가 시 볼륨 삭제
 - 작업은 **feature 브랜치**를 생성하여 진행한다. (예: `feat/경로-모아보기`, `fix/gps-validation`)
 - 작업 완료 후 **문서(AGENTS.md, README.md, docs/API.md 등)를 현재 코드 상태에 맞게 업데이트**한다.
 - 작업 완료 후 **커밋 → 푸시 → PR 생성**까지 수행한다. (main 브랜치에 직접 커밋하지 않는다.)
-- **에러·트러블슈팅·의식적인 트레이드오프·성능 개선 사례는 `.Codex/TROUBLESHOOTING.md` 에 즉시 기록**한다. 형식은 해당 파일 상단 가이드를 따른다 (날짜 / 분류 / 상황 / 원인 / 해결 / 학습). 이력서·포트폴리오 작성 시 근거 자료로 활용.
+- **에러·트러블슈팅·의식적인 트레이드오프·성능 개선 사례는 `docs/TROUBLESHOOTING.md` 에 즉시 기록**한다. 형식은 해당 파일 상단 가이드를 따른다 (날짜 / 분류 / 상황 / 원인 / 해결 / 학습). 이력서·포트폴리오 작성 시 근거 자료로 활용.
 
 ## Git Convention
 

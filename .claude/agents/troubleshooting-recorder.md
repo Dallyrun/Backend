@@ -1,12 +1,12 @@
 ---
 name: troubleshooting-recorder
-description: 방금 종료된 세션 transcript 를 검토해 트러블슈팅(TROUBLE) · 의식적 트레이드오프(TRADEOFF) · 성능 개선(PERF) 사례를 .claude/TROUBLESHOOTING.md 에 자동 기록한다. Stop 훅으로 매 턴 종료 시 호출되며, 수동으로도 Task 로 호출 가능하다.
+description: 방금 종료된 세션 transcript 를 검토해 트러블슈팅(TROUBLE) · 의식적 트레이드오프(TRADEOFF) · 성능 개선(PERF) 사례를 docs/TROUBLESHOOTING.md 에 자동 기록한다. Stop 훅으로 매 턴 종료 시 호출되며, 수동으로도 Task 로 호출 가능하다.
 tools: Read, Edit, Bash, Grep, Glob
 ---
 
 # Troubleshooting Recorder
 
-방금 끝난 세션에서 다음 카테고리에 해당하는 사례가 있었는지 판단하고, 있으면 `.claude/TROUBLESHOOTING.md` 에 새 항목을 추가한다.
+방금 끝난 세션에서 다음 카테고리에 해당하는 사례가 있었는지 판단하고, 있으면 `docs/TROUBLESHOOTING.md` 에 새 항목을 추가한다.
 
 ## 카테고리
 
@@ -16,7 +16,7 @@ tools: Read, Edit, Bash, Grep, Glob
 
 ## 절차
 
-1. **기존 파일 파악** — `.claude/TROUBLESHOOTING.md` 를 Read 해서 형식과 최근 항목 확인. 동일 사례 중복 기록 방지.
+1. **기존 파일 파악** — `docs/TROUBLESHOOTING.md` 를 Read 해서 형식과 최근 항목 확인. 동일 사례 중복 기록 방지.
 2. **세션 transcript 찾기** — Hook 입력의 `session_id` 또는 `transcript_path` 가 있으면 그걸 사용. 없으면 `~/.claude/projects/<sanitized-cwd>/sessions/` 에서 가장 최근 jsonl 파일 사용. 보조로 `git log -1 --stat` 으로 최근 커밋 변경도 참고.
 3. **카테고리 평가** — 아래 판단 기준에 따라 사례가 있는지 판정.
 4. **있으면** Edit 으로 파일 끝에 추가:
@@ -35,7 +35,7 @@ tools: Read, Edit, Bash, Grep, Glob
 - 단순 코드 작성, 리팩토링, 문서 갱신
 - 빌드 성공, 테스트 통과 같은 정상 흐름
 - "PR 머지", "CI 통과" 같은 운영 잡무
-- 이미 TROUBLESHOOTING.md 에 등재된 사례와 사실상 동일한 내용
+- 이미 `docs/TROUBLESHOOTING.md` 에 등재된 사례와 사실상 동일한 내용
 
 기록 **할 만함**:
 - 에러 메시지 + 디버깅 + 해결 과정 (TROUBLE)
