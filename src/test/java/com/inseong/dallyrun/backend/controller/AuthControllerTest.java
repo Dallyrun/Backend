@@ -4,6 +4,7 @@ import com.inseong.dallyrun.backend.config.SecurityConfig;
 import com.inseong.dallyrun.backend.dto.response.TokenResponse;
 import com.inseong.dallyrun.backend.exception.BusinessException;
 import com.inseong.dallyrun.backend.exception.ErrorCode;
+import com.inseong.dallyrun.backend.security.CustomUserDetails;
 import com.inseong.dallyrun.backend.security.CustomUserDetailsService;
 import com.inseong.dallyrun.backend.security.JwtAuthenticationFilter;
 import com.inseong.dallyrun.backend.security.JwtTokenProvider;
@@ -18,7 +19,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -192,5 +195,25 @@ class AuthControllerTest {
                         .content("{\"refreshToken\":\"old-refresh\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.accessToken").value("new-access"));
+    }
+
+    @Test
+    void logout_withoutAccessToken_returns401() throws Exception {
+        mockMvc.perform(delete("/api/auth/logout"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void logout_withAccessToken_returns200() throws Exception {
+        when(jwtTokenProvider.validateToken("access-token")).thenReturn(true);
+        when(jwtTokenProvider.getMemberIdFromToken("access-token")).thenReturn(1L);
+        when(customUserDetailsService.loadUserById(1L))
+                .thenReturn(new CustomUserDetails(1L, "test@test.com"));
+
+        mockMvc.perform(delete("/api/auth/logout")
+                        .header("Authorization", "Bearer access-token"))
+                .andExpect(status().isOk());
+
+        verify(authService).logout(1L);
     }
 }

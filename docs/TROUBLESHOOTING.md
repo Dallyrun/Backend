@@ -20,6 +20,13 @@
 
 ---
 
+## 2026-04-29 · TROUBLE 로그아웃 permitAll 로 인한 null principal 위험
+
+- 상황: `DELETE /api/auth/logout` 컨트롤러는 `@AuthenticationPrincipal` 의 `memberId` 로 Redis refresh token 을 삭제하지만, `SecurityConfig` 에서 `/api/auth/**` 전체를 `permitAll` 로 열어두고 있었다.
+- 원인: Spring Security matcher 가 먼저 매칭된 규칙을 적용하므로 로그아웃도 인증 없이 컨트롤러까지 도달할 수 있었다. 토큰이 없으면 `userDetails` 가 null 이 되어 의도한 401 대신 null principal 오류가 날 수 있었다.
+- 해결: `DELETE /api/auth/logout` matcher 를 `/api/auth/**` 보다 앞에 두고 `authenticated()` 로 지정. 무인증 요청은 401, 유효한 Access Token 요청은 200 을 반환하는 컨트롤러 테스트를 추가했다.
+- 학습/메모: 같은 prefix 의 공개 API 와 인증 API 가 섞이면 넓은 `permitAll` 보다 예외 엔드포인트를 먼저 선언해야 한다.
+
 ## 2026-04-24 · TROUBLE Hibernate ALTER TABLE NOT NULL 실패
 
 - 상황: `Member` 엔티티에 `ageBracket`, `gender` (NOT NULL) 컬럼 추가 후 앱 기동 시 `column "age_bracket" of relation "member" contains null values` 에러로 ALTER 실패. 앱은 떴지만 회원 관련 쿼리 런타임 오류
