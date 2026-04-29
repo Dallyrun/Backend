@@ -204,6 +204,12 @@ class AuthControllerTest {
     }
 
     @Test
+    void logout_withWrongMethodWithoutAccessToken_returns401() throws Exception {
+        mockMvc.perform(post("/api/auth/logout"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void logout_withAccessToken_returns200() throws Exception {
         when(jwtTokenProvider.validateToken("access-token")).thenReturn(true);
         when(jwtTokenProvider.getMemberIdFromToken("access-token")).thenReturn(1L);
