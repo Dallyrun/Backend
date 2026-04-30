@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -50,7 +51,7 @@ public interface RunningSessionRepository extends JpaRepository<RunningSession, 
     @Query("SELECT DISTINCT CAST(rs.startedAt AS localdate) FROM RunningSession rs " +
             "WHERE rs.member.id = :memberId AND rs.status = 'COMPLETED' " +
             "ORDER BY CAST(rs.startedAt AS localdate) DESC")
-    List<java.time.LocalDate> findDistinctRunDates(@Param("memberId") Long memberId);
+    List<LocalDate> findDistinctRunDates(@Param("memberId") Long memberId);
 
     /**
      * 시작 시각이 새벽(04:00~06:59) 인 완료 세션 수.
